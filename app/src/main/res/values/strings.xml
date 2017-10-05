@@ -3,4 +3,38 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!--SignIn-->
+    <string name="store_location">Store Location</string>
+    <string name="password">Password</string>
+    <string name="enter_password">Please enter your password.</string>
+
+    <!-- Menu -->
+    <string name="menu_new_orders">NEW ORDERS</string>
+    <string name="menu_completed_orders">COMPLETED ORDERS</string>
+    <string name="menu_search">SEARCH</string>
+    <string name="menu_store_profile">STORE PROFILE</string>
+    <string name="menu_signout">SIGN OUT</string>
+
+    <!-- New Order -->
+    <string name="refund_button">Refund</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="rewards_credit">Rewards Credit</string>
+    <string name="tax">Tax</string>
+    <string name="total">Total</string>
+    <string name="rewards">Rewards</string>
+
+    <!-- Store Info -->
+    <string name="store_info">STORE INFO</string>
+    <string name="current_wait_time">Current Wait Time</string>
+    <string name="open_hour">Opening Hour</string>
+    <string name="close_hour">Closing Hour</string>
+    <string name="print_report">Print Report</string>
+    <string name="report_from">From:</string>
+    <string name="report_to">to</string>
+
+    <!-- Refund -->
+    <string name="refund">REFUND</string>
+    <string name="select_all">SELECT ALL</string>
+
 </resources>

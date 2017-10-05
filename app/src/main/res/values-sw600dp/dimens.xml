@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="logo_top_margin">30dp</dimen>
+    <dimen name="menu_size">30dp</dimen>
+    <dimen name="progressbar_height">50dp</dimen>
+    <dimen name="topbar_height">50dp</dimen>
+</resources>

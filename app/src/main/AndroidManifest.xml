@@ -31,6 +31,7 @@
             android:name=".activities.SignInActivity"
             android:screenOrientation="landscape" />
         <activity android:name=".activities.MainActivity" />
+        <activity android:name=".activities.refundActivity"></activity>
     </application>
 
 </manifest>
