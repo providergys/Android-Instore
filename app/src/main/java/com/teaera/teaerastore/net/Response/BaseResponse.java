@@ -6,22 +6,24 @@ package com.teaera.teaerastore.net.Response;
 
 public class BaseResponse {
 
-    private String status;
+    private String error;
     private String message;
 
+    private static String success = "false";
+    private static String failed = "true";
 
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
+    public String getError() {
+        return error;
     }
 
     public String getMessage() {
         return message;
     }
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
+    public Boolean isError() {
+        if (this.error == success) {
+            return false;
+        }
+        return true;
+    }
 }

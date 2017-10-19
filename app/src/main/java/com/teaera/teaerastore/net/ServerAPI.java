@@ -1,11 +1,16 @@
 package com.teaera.teaerastore.net;
 
-import com.teaera.teaerastore.net.Request.SignInRequest;
-import com.teaera.teaerastore.net.Response.BaseResponse;
-import com.teaera.teaerastore.net.Response.UserResponse;
+import com.teaera.teaerastore.net.Request.GetOrdersRequest;
+import com.teaera.teaerastore.net.Request.GetStoreRequest;
+import com.teaera.teaerastore.net.Request.LoginRequest;
+import com.teaera.teaerastore.net.Request.UpdateStoreRequest;
+import com.teaera.teaerastore.net.Response.GetOrdersResponse;
+import com.teaera.teaerastore.net.Response.GetStoresResponse;
+import com.teaera.teaerastore.net.Response.StoreResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 /**
@@ -14,13 +19,39 @@ import retrofit2.http.POST;
 
 public interface ServerAPI {
 
-    String BASE_URL = "http://34.228.81.219/API/";
-    //String DEVICE = "android";
+    String BASE_URL = "http://34.228.81.219/store/api/";
 
-    @POST("Index.php?Service=Login")
-    Call<UserResponse> signIn(
-            @Body SignInRequest request
+    @POST("storeLogin")
+    Call<StoreResponse> login(
+            @Body LoginRequest request
     );
+
+    @POST("getStoreById")
+    Call<StoreResponse> getStoreById(
+            @Body GetStoreRequest request
+    );
+
+    @POST("updateStore")
+    Call<StoreResponse> updateStore(
+            @Body UpdateStoreRequest request
+    );
+
+    @GET("getStores")
+    Call<GetStoresResponse> getStores(
+    );
+
+    @POST("getNewOrdersByStore")
+    Call<GetOrdersResponse> getNewOrders(
+            @Body GetOrdersRequest request
+    );
+
+    @POST("getCompletedOrdersByStore")
+    Call<GetOrdersResponse> getCompletedOrders(
+            @Body GetOrdersRequest request
+    );
+
+
+
 
 }
 

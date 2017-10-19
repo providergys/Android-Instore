@@ -2,7 +2,9 @@ package com.teaera.teaerastore.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -11,7 +13,19 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.teaera.teaerastore.R;
+import com.teaera.teaerastore.app.Application;
+import com.teaera.teaerastore.net.Model.StoreInfo;
+import com.teaera.teaerastore.net.Request.LoginRequest;
+import com.teaera.teaerastore.net.Response.GetStoresResponse;
+import com.teaera.teaerastore.net.Response.StoreResponse;
+import com.teaera.teaerastore.preference.StorePrefs;
 import com.teaera.teaerastore.utils.DialogUtils;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SignInActivity extends BaseActivity implements View.OnClickListener{
 
@@ -19,29 +33,50 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
     private TextView locationTextView;
     private EditText passwordEditText;
 
-
-    String[] locationNames = {"Cupertino, CA", "SanJose, CA"};
+    private ArrayList<StoreInfo> stores = new ArrayList<StoreInfo>();
+    private ArrayList<String> storeNames = new ArrayList<String>();
+    private String selectedLocationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 
+        stores = (ArrayList<StoreInfo>) getIntent().getSerializableExtra("stores");
+
         init();
 
+        if (stores.size() == 0) {
+            getStores();
+        } else {
+            updateStores();
+        }
     }
 
     private void init() {
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         passwordEditText = findViewById(R.id.passwordEditText);
         locationTextView = findViewById(R.id.locationTextView1);
         locationSpinner = findViewById(R.id.locationSpinner);
 
+        ImageButton loginImageButton = findViewById(R.id.loginImageButton);
+        loginImageButton.setOnClickListener(this);
+    }
 
-        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item,locationNames);
+    private void updateStores() {
+
+        for (int i = 0; i < stores.size(); i++) {
+            storeNames.add(stores.get(i).getName());
+        }
+
+        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_spinner_item,storeNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         locationSpinner.setAdapter(adapter);
         locationSpinner.setSelection(0);
+        selectedLocationId = stores.get(0).getId();
+
         locationTextView.setText(locationSpinner.getSelectedItem().toString());
         locationTextView.setOnClickListener(this);
 
@@ -56,51 +91,67 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
 
             }
         });
+    }
 
-        ImageButton loginImageButton = findViewById(R.id.loginImageButton);
-        loginImageButton.setOnClickListener(this);
 
+    private void getStores() {
+        showLoader(R.string.empty);
+
+        Application.getServerApi().getStores().enqueue(new Callback<GetStoresResponse>(){
+
+            @Override
+            public void onResponse(Call<GetStoresResponse> call, Response<GetStoresResponse> response) {
+                hideLoader();
+                if (response.body().isError()) {
+                    DialogUtils.showDialog(SignInActivity.this, "Error", response.body().getMessage(), null, null);
+                } else {
+                    stores = response.body().getStores();
+                    updateStores();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GetStoresResponse> call, Throwable t) {
+                hideLoader();
+                if (t.getLocalizedMessage() != null) {
+                    Log.d("SignIn", t.getLocalizedMessage());
+                } else {
+                    Log.d("SignIn", "Unknown error");
+                }
+            }
+        });
     }
 
     private void loginToServer(String pass) {
+        showLoader(R.string.empty);
 
-        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-        startActivity(intent);
-        overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
-        finish();
+        Application.getServerApi().login(new LoginRequest(selectedLocationId, pass)).enqueue(new Callback<StoreResponse>(){
 
+            @Override
+            public void onResponse(Call<StoreResponse> call, Response<StoreResponse> response) {
+                hideLoader();
+                if (response.body().isError()) {
+                    DialogUtils.showDialog(SignInActivity.this, "Error", response.body().getMessage(), null, null);
+                } else {
+                    StorePrefs.setLoggedIn(SignInActivity.this, true);
+                    StorePrefs.saveStoreInfo(SignInActivity.this, response.body().getStoreInfo());
+                    Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
+                    finish();
+                }
+            }
 
-//        showLoader(R.string.empty);
-//
-//        Application.getServerApi().getCategories().enqueue(new Callback<GetCategoryResponse>(){
-//
-//            @Override
-//            public void onResponse(Call<GetCategoryResponse> call, Response<GetCategoryResponse> response) {
-//                hideLoader();
-//                if (response.body().isError()) {
-//                    DialogUtils.showDialog(SplashActivity.this, "Error", response.body().getMessage(), null, null);
-//                } else {
-//                    LocationPrefs.setLocations(SplashActivity.this, response.body().getLocations());
-//                    CategoryPrefs.setCategories(SplashActivity.this, response.body().getCategories());
-//                    PromotedMenuPrefs.setPromotedMenu(SplashActivity.this, response.body().getPromoted());
-//
-//                    Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-//                    startActivity(intent);
-//                    overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
-//                    finish();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<GetCategoryResponse> call, Throwable t) {
-//                hideLoader();
-//                if (t.getLocalizedMessage() != null) {
-//                    Log.d("Splash", t.getLocalizedMessage());
-//                } else {
-//                    Log.d("Splash", "Unknown error");
-//                }
-//            }
-//        });
+            @Override
+            public void onFailure(Call<StoreResponse> call, Throwable t) {
+                hideLoader();
+                if (t.getLocalizedMessage() != null) {
+                    Log.d("SignIn", t.getLocalizedMessage());
+                } else {
+                    Log.d("SignIn", "Unknown error");
+                }
+            }
+        });
     }
 
     @Override

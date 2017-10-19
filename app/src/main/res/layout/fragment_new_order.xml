@@ -52,7 +52,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@+id/relativeLayout5"
-                android:background="@android:color/white" />
+                android:layout_centerHorizontal="true"
+                android:choiceMode="singleChoice"
+                android:listSelector="@android:color/darker_gray" />
 
 
         </RelativeLayout>
@@ -133,9 +135,9 @@
                     android:id="@+id/emailTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignLeft="@+id/nameNumberTextView"
-                    android:layout_alignStart="@+id/nameNumberTextView"
-                    android:layout_below="@+id/nameNumberTextView"
+                    android:layout_alignLeft="@+id/nameTextView"
+                    android:layout_alignStart="@+id/nameTextView"
+                    android:layout_below="@+id/nameTextView"
                     android:layout_marginBottom="5dp"
                     android:layout_marginTop="5dp"
                     android:text="william@gmail.com"
@@ -144,7 +146,7 @@
                     android:typeface="normal" />
 
                 <TextView
-                    android:id="@+id/nameNumberTextView"
+                    android:id="@+id/nameTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"

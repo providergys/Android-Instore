@@ -10,4 +10,7 @@
     <color name="select_color">#B3975F</color>
     <color name="border_color">#c4c4c4</color>
 
+    <color name="black_opacity_color">#E6000000</color>
+    <color name="new_status_color">#b85092</color>
+    <color name="progress_color">#000000</color>
 </resources>
