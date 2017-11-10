@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.teaera.teaerastore">
+    package="com.teaera.teaeracafe">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -18,21 +18,44 @@
         android:theme="@style/AppTheme"
         tools:node="merge"
         tools:replace="android:icon">
-        <activity
-            android:name=".activities.SplashActivity"
-            android:screenOrientation="landscape">
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+
+        <provider
+            android:name="com.facebook.FacebookContentProvider"
+            android:authorities="com.facebook.app.FacebookContentProvider1693168514330985"
+            android:exported="true" />
+
+        <activity android:name=".activities.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.SignInActivity"
-            android:screenOrientation="landscape" />
+        <activity android:name=".activities.SignInActivity" />
+        <activity android:name=".activities.SignUpActivity" />
+        <activity android:name=".activities.ForgotActivity" />
         <activity android:name=".activities.MainActivity" />
-        <activity android:name=".activities.refundActivity" />
-        <activity android:name=".activities.CustomerInfoActivity"></activity>
+        <activity android:name=".activities.ItemCustomizeActivity" />
+        <activity android:name=".activities.CartActivity" />
+        <activity android:name=".activities.SubMenuActivity" />
+        <activity android:name=".activities.OrderReceiptActivity" />
+        <activity android:name=".activities.PaymentEditActivity" />
+
+        <service android:name=".utils.MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".utils.FirebaseIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity android:name=".activities.UpdatePasswordActivity"></activity>
     </application>
 
 </manifest>

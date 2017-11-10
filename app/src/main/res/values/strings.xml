@@ -1,54 +1,84 @@
 <resources>
-    <string name="app_name">teaerastore</string>
+    <string name="app_name">Teaeracafe</string>
+    <string name="facebook_app_id">1453103078076809</string>
 
+    // Loading
+    <string name="load">Loading...</string>
     <string name="empty"></string>
 
-    <!--SignIn-->
-    <string name="store_location">Store Location</string>
-    <string name="password">Password</string>
+    <string name="sign_up_button"><u>Sign Up</u></string>
+    <string name="forgot_password_button"><u>Forgot Password</u></string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    // SignUp Screen
+
+    <string name="enter_firstname">Please enter your first name.</string>
+    <string name="enter_lastname">Please enter your last name.</string>
+    <string name="enter_email">Please enter your email.</string>
     <string name="enter_password">Please enter your password.</string>
 
-    <!-- Menu -->
-    <string name="menu_new_orders">NEW ORDERS</string>
-    <string name="menu_completed_orders">COMPLETED ORDERS</string>
-    <string name="menu_search">SEARCH</string>
-    <string name="menu_store_profile">STORE PROFILE</string>
-    <string name="menu_signout">SIGN OUT</string>
 
-    <!-- New Order -->
-    <string name="refund_button">Refund</string>
+    // Menu Screen
+    <string name="pick_up_location">Pickup Location</string>
+    <string name="cupertino">Cupertino, CA</string>
+    <string name="sanjose">San Jose, CA</string>
+    <string-array name="location_arrays">
+        <item>Cupertino, CA</item>
+        <item>San Jose, CA</item>
+    </string-array>
+
+
+    // Drop Menu
+    <string name="menu_menu">Menu</string>
+    <string name="menu_notification">Notification</string>
+    <string name="menu_rewards">Rewards</string>
+    <string name="menu_profile">Profile</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_logout">Logout</string>
+    <string name="menu_order_receipt">Order Receipt</string>
+    <string name="menu_cart">Cart</string>
+    <string name="menu_payment_method">Payment Method</string>
+
+    // State
+    <string name="order_state_received">ORDER RECEIVED</string>
+    <string name="order_state_progress">IN PROGRESS</string>
+    <string name="order_state_ready">READY FOR PICK-UP</string>
+    <string name="order_state_complete">COMPLETE</string>
+
+    // Order Recipt
     <string name="subtotal">Subtotal</string>
     <string name="rewards_credit">Rewards Credit</string>
     <string name="tax">Tax</string>
     <string name="total">Total</string>
-    <string name="rewards">Rewards</string>
+    <string name="success_order">Placed Order Successfully.</string>
+    <string name="empty_order">There is no order items. Please add items.</string>
+    <string name="success_refund_order">Orders refunded Successfully.</string>
 
-    <string name="order_new">NEW</string>
-    <string name="order_progress">In Progress</string>
-    <string name="order_ready">Ready for Pickup</string>
-    <string name="order_completed">Completed</string>
 
-    <!-- Store Info -->
-    <string name="store_info">STORE INFO</string>
-    <string name="current_wait_time">Current Wait Time</string>
-    <string name="open_hour">Opening Hour</string>
-    <string name="close_hour">Closing Hour</string>
-    <string name="print_report">Print Report</string>
-    <string name="report_from">From:</string>
-    <string name="report_to">to</string>
-    <string name="error_closing_hour">Choose vaild closing hour.</string>
+    // Cart
+    <string name="add_more">Add more Items</string>
+    <string name="redeem_free_drink">Redeem Free Drink</string>
 
-    <!-- Refund -->
-    <string name="refund">REFUND</string>
-    <string name="select_all">SELECT ALL</string>
-    <string name="process_button">Process</string>
-    <string name="auth_code_title">AUTHORIZATION CODE</string>
+    // Rewards
+    <string name="order_receipt">Order Receipt</string>
+    <string name="remaining_balance">Remaining Balance</string>
+    <string name="reload_balance">Reload Balance</string>
+    <string name="two_rewards">*2 Rewards stars</string>
+    <string name="four_rewards">*4 Rewards stars</string>
+    <string name="redeem_now">Redeem now</string>
 
-    <!-- Customer Info -->
-    <string name="cutomer_info">CUSTOMER INFO</string>
-    <string name="add_reward_button">Add Rewards to Account</string>
-    <string name="add_rewards">ADD REWARDS</string>
+    // Profile
+    <string name="enter_name">Please enter your user name.</string>
 
-    <!-- Customer Info -->
-    <string name="search">SEARCH</string>
+    // Update Password
+    <string name="update_password">Update Password</string>
+    <string name="old_password">Old Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="enter_old_pass">Please enter your current password.</string>
+    <string name="enter_new_pass">Please enter new password.</string>
+    <string name="enter_confirm_pass">Please enter confirm password.</string>
+    <string name="confirm_pass_error">Confirm password is different. Please enter again.</string>
 </resources>
