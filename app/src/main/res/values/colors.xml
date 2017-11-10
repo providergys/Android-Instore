@@ -2,14 +2,15 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#ff4081</color>
+    <color name="colorAccent">#FF4081</color>
 
     <color name="loader_color">#FFA5DC86</color>
-    <color name="select_color">#c2a466</color>
-    <color name="location_bottom_color">#828282</color>
-    <color name="gray_color">#a5a5a4</color>
-    <color name="light_gray_color">#d5d5d4</color>
-    <color name="yellow_highlight">#b3975f</color>
+    <color name="line_color">#92918A</color>
+    <color name="base_color">#E0E0E0</color>
+    <color name="select_color">#B3975F</color>
+    <color name="border_color">#c4c4c4</color>
 
-
+    <color name="black_opacity_color">#E6000000</color>
+    <color name="new_status_color">#b85092</color>
+    <color name="progress_color">#000000</color>
 </resources>
