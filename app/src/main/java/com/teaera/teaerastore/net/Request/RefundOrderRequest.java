@@ -14,15 +14,17 @@ public class RefundOrderRequest {
     final String subTotal;
     final String rewardsCredit;
     final String tax;
+    final String taxAmount;
     final String total;
     final ArrayList<OrderItemInfo> refundItems;
 
 
-    public RefundOrderRequest(String orderId, String subTotal, String rewardsCredit, String tax, String total, ArrayList<OrderItemInfo> refundItems) {
+    public RefundOrderRequest(String orderId, String subTotal, String rewardsCredit, String tax, String taxAmount, String total, ArrayList<OrderItemInfo> refundItems) {
         this.orderId = orderId;
         this.subTotal = subTotal;
         this.rewardsCredit = rewardsCredit;
         this.tax = tax;
+        this.taxAmount = taxAmount;
         this.total = total;
         this.refundItems = refundItems;
     }

@@ -24,7 +24,9 @@ public class RefundOrderListAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<OrderItemInfo> orderItems;
     private OnRefundCheckListener onRefundCheckListener;
+
     private ArrayList<Integer> checkList;
+
     public RefundOrderListAdapter(Activity activity, ArrayList<OrderItemInfo> orderItems, ArrayList<Integer> checkList) {
 
         this.context = activity;
@@ -84,16 +86,19 @@ public class RefundOrderListAdapter extends BaseAdapter {
             holder.checkImageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    holder.checkImageButton.setImageResource(R.drawable.refund_check);
                     onRefundCheckListener.onRefundCheckClicked(position);
-//                    if (orderItems.get(position).getRefunded().equals("0")) {
-//                        holder.checkImageButton.setImageResource(R.drawable.refund_check);
-//                        onRefundCheckListener.onRefundCheckClicked(position);
-//                    }
                 }
             });
         } else {
             holder.checkImageButton.setImageResource(R.drawable.refund_check);
+            if (checkList.get(position) == 2) {
+                holder.checkImageButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onRefundCheckListener.onUnRefundCheckClicked(position);
+                    }
+                });
+            }
         }
 
         return rowView;
@@ -105,5 +110,6 @@ public class RefundOrderListAdapter extends BaseAdapter {
 
     public interface OnRefundCheckListener {
         public void onRefundCheckClicked(int position);
+        public void onUnRefundCheckClicked(int position);
     }
 }

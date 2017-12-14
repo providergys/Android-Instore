@@ -84,6 +84,7 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
                 locationTextView.setText(locationSpinner.getSelectedItem().toString());
+                selectedLocationId = stores.get(position).getId();
             }
 
             @Override

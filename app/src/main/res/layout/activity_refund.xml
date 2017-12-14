@@ -105,9 +105,8 @@
                     android:id="@+id/orderNumberTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignLeft="@+id/nameTextView"
                     android:layout_alignParentTop="true"
-                    android:layout_alignStart="@+id/nameTextView"
+                    android:layout_centerHorizontal="true"
                     android:text="ORDER #23594"
                     android:textColor="@android:color/black"
                     android:textSize="22sp"
@@ -143,6 +142,11 @@
                         android:textSize="18dp"
                         android:typeface="monospace" />
 
+                    <Button
+                        android:id="@+id/selectAllButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent" />
                 </RelativeLayout>
 
                 <ImageView
@@ -392,7 +396,7 @@
                             android:layout_alignParentTop="true"
                             android:layout_weight="1"
                             android:gravity="center_vertical"
-                            android:text="$0"
+                            android:text="$0.00"
                             android:textAlignment="textEnd"
                             android:textColor="@android:color/white"
                             android:textSize="14dp"
@@ -425,7 +429,7 @@
                             android:layout_alignParentTop="true"
                             android:layout_weight="1"
                             android:gravity="center_vertical"
-                            android:text="$0"
+                            android:text="$0.00"
                             android:textAlignment="textEnd"
                             android:textColor="@android:color/white"
                             android:textSize="14dp"
@@ -459,7 +463,7 @@
                             android:layout_alignParentTop="true"
                             android:layout_weight="1"
                             android:gravity="center_vertical"
-                            android:text="$0"
+                            android:text="$0.00"
                             android:textAlignment="textEnd"
                             android:textColor="@android:color/white"
                             android:textSize="14dp"
@@ -492,7 +496,7 @@
                             android:layout_alignParentTop="true"
                             android:layout_weight="1"
                             android:gravity="center_vertical"
-                            android:text="$0"
+                            android:text="$0.00"
                             android:textAlignment="textEnd"
                             android:textColor="@android:color/white"
                             android:textSize="14dp"
@@ -503,14 +507,15 @@
                 <RelativeLayout
                     android:id="@+id/confirmRelativeLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="20dp"
+                    android:layout_height="40dp"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/linearLayout3"
                     android:background="@color/base_color"
                     android:orientation="horizontal"
                     android:paddingLeft="25dp"
-                    android:paddingRight="25dp">
+                    android:paddingRight="25dp"
+                    android:visibility="visible">
 
                     <TextView
                         android:id="@+id/textView33"

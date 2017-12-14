@@ -48,6 +48,7 @@ public class CustomerInfoActivity extends BaseActivity implements View.OnClickLi
     private ArrayList<OrderInfo> orders = new ArrayList<OrderInfo>();
     private String userId;
     int pageNumber = 1;
+    int rewardStars = 0;
 
     private String[] rewards = {"- None -", "1 Stars", "2 Stars", "3 Stars", "4 Stars", "5 Stars", "6 Stars", "7 Stars", "8 Stars", "9 Stars", "10 Stars"};
 
@@ -86,7 +87,6 @@ public class CustomerInfoActivity extends BaseActivity implements View.OnClickLi
         rewardSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view,
                                        int position, long id) {
-                authRelativeLayout.setVisibility(View.GONE);
                 addRewardTextView.setText(rewardSpinner.getSelectedItem().toString());
             }
 
@@ -112,7 +112,8 @@ public class CustomerInfoActivity extends BaseActivity implements View.OnClickLi
     private void updateCustomerInfo() {
         nameTextView.setText(orders.get(0).getUserName());
         emailTextView.setText(orders.get(0).getEmail());
-        rewardTextView.setText(Integer.toString(orders.get(0).getRewardStar()));
+        rewardStars = orders.get(0).getRewardStar();
+        rewardTextView.setText(Integer.toString(rewardStars));
 
         orderListAdapter = new CustomerOrderListAdapter(this, orders, (CustomerOrderListAdapter.OnOrderItemClickListener) this);
         orderListView.setAdapter(orderListAdapter);
@@ -161,7 +162,12 @@ public class CustomerInfoActivity extends BaseActivity implements View.OnClickLi
                 if (response.body().isError()) {
                     DialogUtils.showDialog(CustomerInfoActivity.this, "Error", response.body().getMessage(), null, null);
                 } else {
-                    rewardTextView.setText(Integer.toString(orders.get(0).getRewardStar() + rewardSpinner.getSelectedItemPosition()));
+                    rewardStars = rewardStars + rewardSpinner.getSelectedItemPosition();
+                    rewardTextView.setText(Integer.toString(rewardStars));
+
+                    rewardSpinner.setSelection(0);
+                    passwordEditText.setText("");
+                    authRelativeLayout.setVisibility(View.GONE);
                 }
             }
 
@@ -191,6 +197,8 @@ public class CustomerInfoActivity extends BaseActivity implements View.OnClickLi
                 break;
 
             case R.id.closeButton:
+                rewardSpinner.setSelection(0);
+                passwordEditText.setText("");
                 authRelativeLayout.setVisibility(View.GONE);
                 break;
 

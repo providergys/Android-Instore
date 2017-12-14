@@ -28,6 +28,7 @@ import com.teaera.teaerastore.net.Request.UpdateOrderRequest;
 import com.teaera.teaerastore.net.Response.BaseResponse;
 import com.teaera.teaerastore.net.Response.GetOrdersResponse;
 import com.teaera.teaerastore.net.Response.SearchOrdersResponse;
+import com.teaera.teaerastore.preference.SearchOrderPrefs;
 import com.teaera.teaerastore.preference.StorePrefs;
 import com.teaera.teaerastore.utils.DialogUtils;
 
@@ -41,11 +42,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NewOrderFragment extends Fragment implements View.OnClickListener, OrderListAdapter.OnOrderItemClickListener {
+public class SearchFragment extends Fragment implements View.OnClickListener, OrderListAdapter.OnOrderItemClickListener {
 
     private OrderListAdapter orderListAdapter;
     private ListView orderListView;
@@ -77,27 +77,29 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     private RelativeLayout searchRelativeLayout;
     private RelativeLayout noResultLayout;
 
+
     private ProgressDialog dialog;
     int pageNumber = 1;
     int selectedOrder = 0;
     public ArrayList<OrderInfo> orders = new ArrayList<OrderInfo>();
     public boolean isSearched = false;
 
-    public NewOrderFragment() {
+    public SearchFragment() {
         // Required empty public constructor
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_new_order, container, false);
+            Bundle savedInstanceState) {
+            return inflater.inflate(R.layout.fragment_search, container, false);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        init();
+            init();
     }
+
 
     private void init() {
 
@@ -130,7 +132,6 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         completedStatusButton = getActivity().findViewById(R.id.completedStatusButton);
         completedStatusButton.setOnClickListener(this);
 
-
         customerRelativeLayout = getActivity().findViewById(R.id.customerRelativeLayout);
         customerRelativeLayout.setOnClickListener(this);
 
@@ -138,7 +139,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         searchRelativeLayout.setVisibility(View.GONE);
 
         noResultLayout = getActivity().findViewById(R.id.noResultLayout);
-        noResultLayout.setVisibility(View.GONE);
+        noResultLayout.setVisibility(View.VISIBLE);
 
         Button refundButton = getActivity().findViewById(R.id.refundButton);
         refundButton.setOnClickListener(this);
@@ -152,40 +153,8 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         ImageButton closeSearchButton = getActivity().findViewById(R.id.closeSearchButton);
         closeSearchButton.setOnClickListener(this);
 
-        pageNumber = 1;
-        loadOrders(pageNumber);
         isSearched = false;
 
-    }
-
-    private void loadOrders(int page) {
-        showLoader(R.string.empty);
-
-        Application.getServerApi().getNewOrders(new GetOrdersRequest(StorePrefs.getStoreInfo(getActivity()).getId(), page)).enqueue(new Callback<GetOrdersResponse>(){
-
-            @Override
-            public void onResponse(Call<GetOrdersResponse> call, Response<GetOrdersResponse> response) {
-                hideLoader();
-                if (response.body().isError()) {
-                    DialogUtils.showDialog(getActivity(), "Error", response.body().getMessage(), null, null);
-                } else {
-                    orders = response.body().getOrders();
-                    pageNumber = Integer.parseInt(response.body().getPageNumber());
-
-                    updateOrderList(0);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<GetOrdersResponse> call, Throwable t) {
-                hideLoader();
-                if (t.getLocalizedMessage() != null) {
-                    Log.d("New Order", t.getLocalizedMessage());
-                } else {
-                    Log.d("New Order", "Unknown error");
-                }
-            }
-        });
     }
 
     private void updateOrderList(int position) {
@@ -209,13 +178,16 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
             rewardTextView.setText("");
 
             showStatus("4");
+            detailsOrderListView.setVisibility(View.INVISIBLE);
             noResultLayout.setVisibility(View.VISIBLE);
             return;
         }
 
+        detailsOrderListView.setVisibility(View.VISIBLE);
         noResultLayout.setVisibility(View.GONE);
 
         OrderInfo info = orders.get(position);
+
         int orderId = Integer.parseInt(info.getId());
         orderNumberTextView.setText(String.format("ORDER #%05d", orderId));
         dateTextView.setText(getReceivedDate(info.getTimestamp()));
@@ -238,7 +210,6 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         }
         rewardTextView.setText("+" + rewards);
 
-        detailsOrderListView.setVisibility(View.VISIBLE);
         detailsOrderListAdapter = new DetailsOrderListAdapter(getActivity(), info.getDetails());
         detailsOrderListView.setAdapter(detailsOrderListAdapter);
     }
@@ -264,7 +235,11 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                 statusImageView.setImageResource(R.drawable.progress_ready);
                 completedStatusButton.setEnabled(true);
                 break;
-
+            case "3":
+                statusImageView.setVisibility(View.VISIBLE);
+                statusImageView.setImageResource(R.drawable.progress_completed);
+                completedStatusButton.setEnabled(true);
+                break;
             default:
                 statusImageView.setVisibility(View.INVISIBLE);
         }
@@ -294,11 +269,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                 if (response.body().isError()) {
                     DialogUtils.showDialog(getActivity(), "Error", response.body().getMessage(), null, null);
                 } else {
-                    if (status != "3") {
-                        orders.get(selectedOrder).setStatus(status);
-                    } else {
-                        orders.remove(selectedOrder);
-                    }
+                    orders.get(selectedOrder).setStatus(status);
                     updateOrderList(selectedOrder);
                 }
             }
@@ -316,17 +287,16 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
     }
 
-
     private void searchOrder(String firstName, String lastName, String order, String fromDate, String toDate) {
 
         if (!fromDate.isEmpty() && !toDate.isEmpty()) {
-            fromDate = fromDate + " 00:00:00";
-            toDate = toDate + " 23:59:59";
+        fromDate = fromDate + " 00:00:00";
+        toDate = toDate + " 23:59:59";
         }
 
         showLoader(R.string.empty);
 
-        Application.getServerApi().searchOrders(new SearchOrderRequest(firstName, lastName, order, fromDate, toDate, StorePrefs.getStoreInfo(getActivity()).getId(), "0")).enqueue(new Callback<SearchOrdersResponse>(){
+        Application.getServerApi().searchOrders(new SearchOrderRequest(firstName, lastName, order, fromDate, toDate, StorePrefs.getStoreInfo(getActivity()).getId(), "2")).enqueue(new Callback<SearchOrdersResponse>(){
 
             @Override
             public void onResponse(Call<SearchOrdersResponse> call, Response<SearchOrdersResponse> response) {
@@ -345,9 +315,9 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
             public void onFailure(Call<SearchOrdersResponse> call, Throwable t) {
                 hideLoader();
                 if (t.getLocalizedMessage() != null) {
-                    Log.d("New Order", t.getLocalizedMessage());
+                    Log.d("Search Order", t.getLocalizedMessage());
                 } else {
-                    Log.d("New Order", "Unknown error");
+                    Log.d("Search Order", "Unknown error");
                 }
             }
         });
@@ -369,7 +339,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                 intent.putExtra("orderInfo", orders.get(selectedOrder));
                 startActivity(intent);
                 getActivity().overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
-            break;
+                break;
 
             case R.id.customerRelativeLayout:
                 intent = new Intent(getActivity(), CustomerInfoActivity.class);
@@ -383,11 +353,6 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                 break;
 
             case R.id.closeSearchButton:
-                if (isSearched) {
-                    pageNumber = 1;
-                    loadOrders(pageNumber);
-                    isSearched = false;
-                }
                 hideSearch();
                 break;
 
@@ -423,6 +388,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
             case R.id.completedStatusButton:
                 updateStatus("3");
                 break;
+
         }
     }
 
@@ -451,5 +417,4 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
         return "";
     }
-
 }

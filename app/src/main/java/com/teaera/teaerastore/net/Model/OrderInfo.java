@@ -17,6 +17,7 @@ public class OrderInfo implements Serializable {
     private String subTotal;
     private String rewardsCredit;
     private String tax;
+    private String taxAmount;
     private String totalPrice;
     private String status;
     private String timestamp;
@@ -76,6 +77,13 @@ public class OrderInfo implements Serializable {
     }
     public void setTax(String tax) {
         this.tax = tax;
+    }
+
+    public String getTaxAmount() {
+        return taxAmount;
+    }
+    public void setTaxAmount(String taxAmount) {
+        this.taxAmount = taxAmount;
     }
 
     public String getTotalPrice() {

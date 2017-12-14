@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.teaera.teaerastore.activities.CompletedOrderFragment">
+    tools:context="com.teaera.teaerastore.activities.SearchFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="25dp"
                     android:layout_marginStart="25dp"
-                    android:text="@string/menu_completed_orders"
+                    android:text="@string/menu_search"
                     android:textColor="@android:color/black"
                     android:textSize="24dp"
                     android:typeface="monospace" />
@@ -288,6 +288,7 @@
                         android:id="@+id/textView21"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
+                        android:layout_alignParentTop="true"
                         android:layout_toLeftOf="@+id/creditTextView"
                         android:layout_toStartOf="@+id/creditTextView"
                         android:layout_weight="1"
@@ -360,6 +361,7 @@
                         android:id="@+id/textView23"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
+                        android:layout_alignParentTop="true"
                         android:layout_toLeftOf="@+id/totalTextView"
                         android:layout_toStartOf="@+id/totalTextView"
                         android:layout_weight="1"
@@ -399,7 +401,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:scaleType="fitEnd"
-                    android:src="@drawable/progress_completed" />
+                    android:src="@drawable/progress_new" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -459,6 +461,7 @@
                     android:textSize="20dp"
                     android:typeface="monospace" />
             </RelativeLayout>
+
 
         </RelativeLayout>
 
@@ -889,4 +892,5 @@
         </RelativeLayout>
 
     </RelativeLayout>
+
 </FrameLayout>

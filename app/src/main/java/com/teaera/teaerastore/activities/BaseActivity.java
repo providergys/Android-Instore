@@ -1,12 +1,17 @@
 package com.teaera.teaerastore.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
 import com.teaera.teaerastore.R;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -17,7 +22,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 public class BaseActivity extends Activity {
 
     private SharedPreferences preferences;
-    private SweetAlertDialog loaderDialog;
+    private ProgressDialog dialog;
 
 
     @Override
@@ -33,16 +38,28 @@ public class BaseActivity extends Activity {
 
 
     public void showLoader(int resId) {
-        loaderDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
-        loaderDialog.getProgressHelper().setBarColor(getResources().getColor(R.color.loader_color));
-        loaderDialog.setTitleText(getString(resId));
-        loaderDialog.setCancelable(false);
-        loaderDialog.show();
+        dialog = ProgressDialog.show(this, "",
+                getString(resId), true);
     }
 
     public void hideLoader() {
-        if (loaderDialog != null) {
-            loaderDialog.dismissWithAnimation();
+        if (dialog != null) {
+            dialog.dismiss();
         }
+    }
+
+    public String getReceivedDate(String dateString) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat newSdf = new SimpleDateFormat("MM/dd/yy, hh:mm a");
+
+        try {
+            Date date = sdf.parse(dateString);
+            return  newSdf.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return "";
     }
 }

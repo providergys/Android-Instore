@@ -54,34 +54,41 @@
                     android:text="Store Name"
                     android:textAlignment="center"
                     android:textColor="@android:color/black"
-                    android:textSize="40dp"
+                    android:textSize="30dp"
                     android:typeface="monospace" />
 
-                <ImageView
-                    android:id="@+id/imageView9"
+                <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignLeft="@+id/storeNametextView"
-                    android:layout_alignStart="@+id/storeNametextView"
                     android:layout_below="@+id/storeNametextView"
-                    android:layout_marginTop="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/location_button_black" />
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="10dp">
 
-                <TextView
-                    android:id="@+id/storeAddressTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignEnd="@+id/storeNametextView"
-                    android:layout_alignRight="@+id/storeNametextView"
-                    android:layout_alignTop="@+id/imageView9"
-                    android:layout_marginLeft="5dp"
-                    android:layout_toRightOf="@+id/imageView9"
-                    android:lines="4"
-                    android:text="12345 Homestead Road Str #100 Cupertino CA"
-                    android:textColor="@android:color/black"
-                    android:textSize="18dp"
-                    android:typeface="normal" />
+                    <ImageView
+                        android:id="@+id/imageView9"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/storeNametextView"
+                        android:layout_alignStart="@+id/storeNametextView"
+                        android:layout_below="@+id/storeNametextView"
+                        android:layout_marginTop="10dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/location_button_black" />
+
+                    <TextView
+                        android:id="@+id/storeAddressTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@+id/imageView9"
+                        android:layout_marginLeft="10dp"
+                        android:layout_toRightOf="@+id/imageView9"
+                        android:lines="4"
+                        android:text="cupertino"
+                        android:textColor="@android:color/black"
+                        android:textSize="18dp"
+                        android:typeface="normal" />
+                </RelativeLayout>
+
             </RelativeLayout>
 
             <LinearLayout

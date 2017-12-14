@@ -7,6 +7,7 @@ import com.teaera.teaerastore.net.Request.GetStoreRequest;
 import com.teaera.teaerastore.net.Request.LoginRequest;
 import com.teaera.teaerastore.net.Request.RefundOrderRequest;
 import com.teaera.teaerastore.net.Request.SearchOrderRequest;
+import com.teaera.teaerastore.net.Request.UpdateOrderRequest;
 import com.teaera.teaerastore.net.Request.UpdateStoreRequest;
 import com.teaera.teaerastore.net.Response.BaseResponse;
 import com.teaera.teaerastore.net.Response.GetOrdersResponse;
@@ -82,5 +83,9 @@ public interface ServerAPI {
             @Body SearchOrderRequest request
     );
 
+    @POST("updateOrderStatus")
+    Call<BaseResponse> updateOrderStatus(
+            @Body UpdateOrderRequest request
+    );
 }
 
