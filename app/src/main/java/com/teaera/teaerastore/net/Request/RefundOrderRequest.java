@@ -10,22 +10,26 @@ import java.util.ArrayList;
 
 public class RefundOrderRequest {
 
+    final String userId;
     final String orderId;
     final String subTotal;
     final String rewardsCredit;
+    final String total;
     final String tax;
     final String taxAmount;
-    final String total;
+    final int rewards;
     final ArrayList<OrderItemInfo> refundItems;
 
 
-    public RefundOrderRequest(String orderId, String subTotal, String rewardsCredit, String tax, String taxAmount, String total, ArrayList<OrderItemInfo> refundItems) {
+    public RefundOrderRequest(String userId, String orderId, String subTotal, String rewardsCredit, String tax, String taxAmount, String total, int rewards, ArrayList<OrderItemInfo> refundItems) {
+        this.userId = userId;
         this.orderId = orderId;
         this.subTotal = subTotal;
         this.rewardsCredit = rewardsCredit;
+        this.total = total;
         this.tax = tax;
         this.taxAmount = taxAmount;
-        this.total = total;
+        this.rewards = rewards;
         this.refundItems = refundItems;
     }
 

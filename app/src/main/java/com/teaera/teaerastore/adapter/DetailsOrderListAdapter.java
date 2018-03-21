@@ -70,9 +70,11 @@ public class DetailsOrderListAdapter extends BaseAdapter {
 
         holder.menuTextView.setText(orderItems.get(position).getMenuName());
         holder.detailsTextView.setText(orderItems.get(position).getOptions());
-        holder.quantityTextView.setText(orderItems.get(position).getQuantity());
-        float totalPrice = Float.parseFloat(orderItems.get(position).getPrice())*Integer.parseInt(orderItems.get(position).getQuantity());
-        holder.costTextView.setText(String.format("$%.2f", totalPrice));
+        int quantity = Integer.parseInt(orderItems.get(position).getQuantity()) - Integer.parseInt(orderItems.get(position).getRefundQuantity());
+        holder.quantityTextView.setText(Integer.toString(quantity));
+
+        //float totalPrice = Float.parseFloat(orderItems.get(position).getPrice())*Integer.parseInt(orderItems.get(position).getQuantity());
+        holder.costTextView.setText(String.format("$%.2f", Float.parseFloat(orderItems.get(position).getPrice())));
 
         return rowView;
     }

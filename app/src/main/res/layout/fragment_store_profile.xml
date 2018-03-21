@@ -27,7 +27,7 @@
                 android:layout_marginStart="25dp"
                 android:text="@string/store_info"
                 android:textColor="@android:color/black"
-                android:textSize="24dp"
+                android:textSize="20dp"
                 android:typeface="monospace" />
 
         </RelativeLayout>
@@ -500,8 +500,6 @@
                                     android:layout_alignParentLeft="true"
                                     android:layout_alignParentStart="true"
                                     android:layout_alignParentTop="true"
-                                    android:layout_toLeftOf="@+id/imageView16"
-                                    android:layout_toStartOf="@+id/imageView16"
                                     android:gravity="center_vertical"
                                     android:textAlignment="center"
                                     android:textColor="@android:color/black"

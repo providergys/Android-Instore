@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
         android:name=".app.Application"
@@ -32,7 +33,7 @@
             android:screenOrientation="landscape" />
         <activity android:name=".activities.MainActivity" />
         <activity android:name=".activities.refundActivity" />
-        <activity android:name=".activities.CustomerInfoActivity"></activity>
+        <activity android:name=".activities.CustomerInfoActivity" />
     </application>
 
 </manifest>

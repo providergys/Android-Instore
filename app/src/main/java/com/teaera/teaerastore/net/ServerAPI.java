@@ -3,6 +3,7 @@ package com.teaera.teaerastore.net;
 import com.teaera.teaerastore.net.Request.AddRewardsRequest;
 import com.teaera.teaerastore.net.Request.GetCustomerRequest;
 import com.teaera.teaerastore.net.Request.GetOrdersRequest;
+import com.teaera.teaerastore.net.Request.GetPrintRequest;
 import com.teaera.teaerastore.net.Request.GetStoreRequest;
 import com.teaera.teaerastore.net.Request.LoginRequest;
 import com.teaera.teaerastore.net.Request.RefundOrderRequest;
@@ -11,6 +12,7 @@ import com.teaera.teaerastore.net.Request.UpdateOrderRequest;
 import com.teaera.teaerastore.net.Request.UpdateStoreRequest;
 import com.teaera.teaerastore.net.Response.BaseResponse;
 import com.teaera.teaerastore.net.Response.GetOrdersResponse;
+import com.teaera.teaerastore.net.Response.GetPrintResponse;
 import com.teaera.teaerastore.net.Response.GetStoresResponse;
 import com.teaera.teaerastore.net.Response.RefundOrderResponse;
 import com.teaera.teaerastore.net.Response.SearchOrdersResponse;
@@ -27,7 +29,8 @@ import retrofit2.http.POST;
 
 public interface ServerAPI {
 
-    String BASE_URL = "http://34.228.81.219/store/api/";
+//    String BASE_URL = "http://34.228.81.219/store/api/";
+    String BASE_URL = "http://34.230.22.171/store/api/";
 
     @POST("storeLogin")
     Call<StoreResponse> login(
@@ -87,5 +90,11 @@ public interface ServerAPI {
     Call<BaseResponse> updateOrderStatus(
             @Body UpdateOrderRequest request
     );
+
+    @POST("getPrintData")
+    Call<GetPrintResponse> getPrintData(
+            @Body GetPrintRequest request
+    );
+
 }
 

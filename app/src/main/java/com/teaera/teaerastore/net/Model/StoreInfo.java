@@ -9,6 +9,7 @@ import java.io.Serializable;
 public class StoreInfo implements Serializable {
 
     private String id;
+    private String adminUserId;
     private String name;
     private String address;
     private String tax;
@@ -21,6 +22,13 @@ public class StoreInfo implements Serializable {
     }
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getAdminUserId() {
+        return adminUserId;
+    }
+    public void setAdminUserId(String adminUserId) {
+        this.adminUserId = adminUserId;
     }
 
     public String getName() {

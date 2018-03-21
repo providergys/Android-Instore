@@ -1,8 +1,10 @@
 package com.teaera.teaerastore.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -11,7 +13,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.teaera.teaerastore.R;
-import com.teaera.teaerastore.adapter.DetailsOrderListAdapter;
 import com.teaera.teaerastore.adapter.RefundOrderListAdapter;
 import com.teaera.teaerastore.app.Application;
 import com.teaera.teaerastore.net.Model.OrderInfo;
@@ -23,7 +24,6 @@ import com.teaera.teaerastore.net.Response.RefundOrderResponse;
 import com.teaera.teaerastore.preference.StorePrefs;
 import com.teaera.teaerastore.utils.DialogUtils;
 
-import java.sql.Struct;
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -60,6 +60,14 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
     private ListView orderListView;
     private RefundOrderListAdapter refundOrderListAdapter;
     private ArrayList<Integer> checkList = new ArrayList<Integer>();
+    private ArrayList<Integer> quantityList = new ArrayList<Integer>();
+
+    private int rewards = 0;
+
+    private String totalPriceStr = "0.00";
+    private String subTotalStr = "0.00";
+    private String redeemCreditStr = "0.00";
+    private String taxAmountStr= "0.00";
 
     private OrderInfo orderInfo;
     private int selectedItem = 0;
@@ -71,15 +79,6 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_refund);
         orderInfo = (OrderInfo) getIntent().getSerializableExtra("orderInfo");
-
-        this.checkAll = false;
-        for (int i=0; i<orderInfo.getDetails().size(); i++) {
-            if (orderInfo.getDetails().get(i).getRefunded().equals("1")) {
-                checkList.add(1);
-            } else {
-                checkList.add(0);
-            }
-        }
 
         init();
     }
@@ -112,25 +111,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
         confirmRelativeLayout.setVisibility(View.GONE);
         confirmDateTextView = findViewById(R.id.confirmDateTextView);
 
-        int rewards = 0;
-        if (orderInfo.getDetails().size() > 0) {
-            for (int i = 0; i<orderInfo.getDetails().size(); i++) {
-                if (orderInfo.getDetails().get(i).getDrinkable().equals("1") && orderInfo.getDetails().get(i).getRedeemed().equals("0")) {
-                    rewards = rewards + 1 * Integer.parseInt(orderInfo.getDetails().get(i).getQuantity());
-                }
-            }
-        }
-        rewardsTextView1.setText("+" + rewards + " Star");
-        creditTextView1.setText("-$" + orderInfo.getRewardsCredit());
-        taxTextView1.setText(String.format("$%.2f", (Float.parseFloat(orderInfo.getSubTotal()) - Float.parseFloat(orderInfo.getRewardsCredit())) * Float.parseFloat(orderInfo.getTax())));
-        totalTextView1.setText("$" + orderInfo.getTotalPrice());
-
-        int orderId = Integer.parseInt(orderInfo.getId());
-        orderNumberTextView.setText(String.format("ORDER: #%05d", orderId));
-        dateTextView.setText(getReceivedDate(orderInfo.getTimestamp()));
-        nameTextView.setText(orderInfo.getUserName());
-        emailTextView.setText(orderInfo.getEmail());
-
+        updateOriginalOrderInfo();
 
         orderListView = findViewById(R.id.orderListView);
         refundOrderListAdapter = new RefundOrderListAdapter(this, orderInfo.getDetails(), checkList);
@@ -152,8 +133,35 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
         backButton.setOnClickListener(this);
     }
 
+    private void updateOriginalOrderInfo() {
+
+        this.checkAll = false;
+        for (int i=0; i<orderInfo.getDetails().size(); i++) {
+            if (orderInfo.getDetails().get(i).getRefunded().equals("1")) {
+                checkList.add(1);
+            } else {
+                checkList.add(0);
+            }
+
+            int quantity = Integer.parseInt(orderInfo.getDetails().get(i).getQuantity()) - Integer.parseInt(orderInfo.getDetails().get(i).getRefundQuantity());
+            quantityList.add(quantity);
+            orderInfo.getDetails().get(i).setQuantity(Integer.toString(quantity));
+        }
+
+        rewardsTextView1.setText("+" + orderInfo.getRewards() + " Star");
+        creditTextView1.setText("-$" + orderInfo.getRewardsCredit());
+        taxTextView1.setText(String.format("$%.2f", (Float.parseFloat(orderInfo.getSubTotal()) - Float.parseFloat(orderInfo.getRewardsCredit())) * Float.parseFloat(orderInfo.getTax())));
+        totalTextView1.setText("$" + orderInfo.getTotalPrice());
+
+        int orderId = Integer.parseInt(orderInfo.getId());
+        orderNumberTextView.setText(String.format("ORDER: #%05d", orderId));
+        dateTextView.setText(getReceivedDate(orderInfo.getTimestamp()));
+        nameTextView.setText(orderInfo.getUserName());
+        emailTextView.setText(orderInfo.getEmail());
+    }
+
     private void updateRefundInfo() {
-        int rewards = 0;
+        rewards = 0;
         float redeemCredit = 0;
         float subtotal = 0;
         float tax = 0;
@@ -163,7 +171,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                 if (orderInfo.getDetails().get(i).getDrinkable().equals("1") && checkList.get(i) == 2) {
                     if (orderInfo.getDetails().get(i).getRedeemed().equals("0")) {
                         // calculate rewards
-                        rewards = rewards + 1 * Integer.parseInt(orderInfo.getDetails().get(i).getQuantity());
+                        rewards = rewards + Integer.parseInt(orderInfo.getDetails().get(i).getRewards()) * Integer.parseInt(orderInfo.getDetails().get(i).getQuantity());
                     } else {
                         // calculate redeemed free drink
                         redeemCredit = redeemCredit + Float.parseFloat(orderInfo.getDetails().get(i).getPrice()) * Integer.parseInt(orderInfo.getDetails().get(i).getQuantity());
@@ -177,11 +185,16 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
         }
 
         tax = (subtotal-redeemCredit) * Float.parseFloat(orderInfo.getTax());
+        subTotalStr = String.format("%.2f", subtotal);
+        taxAmountStr= String.format("%.2f", tax);
+        redeemCreditStr = String.format("%.2f", redeemCredit);
+        totalPriceStr = String.format("%.2f", subtotal+tax-redeemCredit);
+
+        subtotalTextView.setText("-$" + subTotalStr);
+        taxTextView.setText("-$" + taxAmountStr);
+        creditTextView.setText("-$" + redeemCreditStr);
+        totalTextView.setText("-$" + totalPriceStr);
         rewardsTextView.setText("-" + rewards + " Star");
-        creditTextView.setText(String.format("-$%.2f", redeemCredit));
-        subtotalTextView.setText(String.format("-$%.2f", subtotal));
-        taxTextView.setText(String.format("-$%.2f", tax));
-        totalTextView.setText(String.format("-$%.2f", subtotal+tax-redeemCredit));
     }
 
     private void auth(String pass) {
@@ -239,7 +252,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
 
         if (refundItems.size() > 0) {
             showLoader(R.string.empty);
-            Application.getServerApi().refundOrder(new RefundOrderRequest(orderInfo.getId(), orderInfo.getSubTotal(), orderInfo.getRewardsCredit(), orderInfo.getTax(), orderInfo.getTaxAmount(), orderInfo.getTotalPrice(), refundItems)).enqueue(new Callback<RefundOrderResponse>(){
+            Application.getServerApi().refundOrder(new RefundOrderRequest(orderInfo.getUserId(), orderInfo.getId(), subTotalStr, redeemCreditStr, orderInfo.getTax(), taxAmountStr, totalPriceStr, rewards, refundItems)).enqueue(new Callback<RefundOrderResponse>(){
 
                 @Override
                 public void onResponse(Call<RefundOrderResponse> call, Response<RefundOrderResponse> response) {
@@ -248,7 +261,10 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                         DialogUtils.showDialog(refundActivity.this, "Error", response.body().getMessage(), null, null);
                     } else {
                         orderInfo = response.body().getOrder();
+                        updateOriginalOrderInfo();
                         updateRefundInfo();
+                        refundOrderListAdapter.updateOrderItems(orderInfo.getDetails());
+                        refundOrderListAdapter.notifyDataSetChanged();
                         processButton.setVisibility(View.INVISIBLE);
                         confirmRelativeLayout.setVisibility(View.VISIBLE);
                         confirmDateTextView.setText(getReceivedDate(orderInfo.getTimestamp()));
@@ -282,9 +298,11 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                 this.checkAll = false;
                 authRelativeLayout.setVisibility(View.GONE);
                 refundOrderListAdapter.notifyDataSetChanged();
+                hideKeyboard();
                 break;
 
             case R.id.authImageButton:
+                hideKeyboard();
                 String pass = codeEditText.getText().toString();
                 if (pass.isEmpty()) {
                     DialogUtils.showDialog(this, "Error", getString(R.string.enter_authcode), null, null);
@@ -319,5 +337,37 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
         refundOrderListAdapter.updateCheckList(checkList);
         refundOrderListAdapter.notifyDataSetChanged();
         updateRefundInfo();
+    }
+
+    @Override
+    public void onPlusClicked(int position) {
+        int refundQuantity = Integer.parseInt(orderInfo.getDetails().get(position).getQuantity());
+        if (refundQuantity < quantityList.get(position)) {
+            refundQuantity ++;
+            orderInfo.getDetails().get(position).setQuantity(Integer.toString(refundQuantity));
+            refundOrderListAdapter.updateOrderItems(orderInfo.getDetails());
+            refundOrderListAdapter.notifyDataSetChanged();
+            updateRefundInfo();
+        }
+    }
+
+    @Override
+    public void onMinusClicked(int position) {
+        int refundQuantity = Integer.parseInt(orderInfo.getDetails().get(position).getQuantity());
+        if (refundQuantity > 0) {
+            refundQuantity --;
+            orderInfo.getDetails().get(position).setQuantity(Integer.toString(refundQuantity));
+            refundOrderListAdapter.updateOrderItems(orderInfo.getDetails());
+            refundOrderListAdapter.notifyDataSetChanged();
+            updateRefundInfo();
+        }
+    }
+
+    public void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

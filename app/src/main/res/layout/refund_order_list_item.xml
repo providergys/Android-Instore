@@ -9,29 +9,13 @@
     android:paddingTop="10dp">
 
     <TextView
-        android:id="@+id/quantityTextView"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="20dp"
-        android:layout_toEndOf="@+id/checkImageButton"
-        android:layout_toRightOf="@+id/checkImageButton"
-        android:background="@android:color/black"
-        android:gravity="center"
-        android:text="1"
-        android:textAlignment="center"
-        android:textColor="@android:color/white"
-        android:textSize="18dp"
-        android:typeface="monospace" />
-
-    <TextView
         android:id="@+id/menuTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="15dp"
-        android:layout_toEndOf="@+id/quantityTextView"
-        android:layout_toRightOf="@+id/quantityTextView"
+        android:layout_alignTop="@+id/checkImageButton"
+        android:layout_marginLeft="20dp"
+        android:layout_toEndOf="@+id/checkImageButton"
+        android:layout_toRightOf="@+id/checkImageButton"
         android:text="TextView"
         android:textSize="18dp"
         android:typeface="monospace" />
@@ -59,6 +43,7 @@
         android:layout_marginTop="10dp"
         android:layout_toLeftOf="@+id/relativeLayout11"
         android:layout_toStartOf="@+id/relativeLayout11"
+        android:minHeight="40dp"
         android:text="milk 50 \n iced"
         android:textSize="16dp"
         android:typeface="normal" />
@@ -82,4 +67,52 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
+    <RelativeLayout
+        android:layout_width="200dp"
+        android:layout_height="40dp"
+        android:layout_alignBottom="@+id/detailsTextView"
+        android:layout_alignEnd="@+id/imageView20"
+        android:layout_alignRight="@+id/imageView20">
+
+        <TextView
+            android:id="@+id/quantityTextView"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@android:color/black"
+            android:gravity="center"
+            android:text="1"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:textSize="18dp"
+            android:typeface="monospace" />
+
+        <Button
+            android:id="@+id/plusButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/quantityTextView"
+            android:layout_toRightOf="@+id/quantityTextView"
+            android:background="@android:color/darker_gray"
+            android:text="+"
+            android:textSize="25dp"
+            android:typeface="serif" />
+
+        <Button
+            android:id="@+id/minusButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/quantityTextView"
+            android:layout_toStartOf="@+id/quantityTextView"
+            android:background="@android:color/darker_gray"
+            android:text="-"
+            android:textSize="25dp"
+            android:typeface="serif" />
+    </RelativeLayout>
 </RelativeLayout>

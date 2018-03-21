@@ -7,13 +7,11 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
-import com.teaera.teaerastore.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
  * Created by admin on 29/08/2017.

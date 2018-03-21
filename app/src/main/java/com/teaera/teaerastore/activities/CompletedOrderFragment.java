@@ -1,7 +1,9 @@
 package com.teaera.teaerastore.activities;
 
 
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,7 +11,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -32,9 +36,9 @@ import com.teaera.teaerastore.utils.DialogUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
-import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -70,12 +74,18 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
     private RelativeLayout customerRelativeLayout;
     private RelativeLayout searchRelativeLayout;
     private RelativeLayout noResultLayout;
+    private Button refundButton;
+
+    private DatePickerDialog fromDatePickerDialog;
+    private DatePickerDialog toDatePickerDialog;
 
     private ProgressDialog dialog;
     int pageNumber = 1;
     int selectedOrder = 0;
     public ArrayList<OrderInfo> orders = new ArrayList<OrderInfo>();
     public boolean isSearched = false;
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
 
     public CompletedOrderFragment() {
         // Required empty public constructor
@@ -117,6 +127,8 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
         orderEditText = getActivity().findViewById(R.id.orderEditText);
         fromTextView = getActivity().findViewById(R.id.fromTextView);
         toTextView = getActivity().findViewById(R.id.toTextView);
+        fromTextView.setOnClickListener(this);
+        toTextView.setOnClickListener(this);
 
         statusImageView = getActivity().findViewById(R.id.statusImageView);
 
@@ -129,8 +141,9 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
         noResultLayout = getActivity().findViewById(R.id.noResultLayout);
         noResultLayout.setVisibility(View.GONE);
 
-        Button refundButton = getActivity().findViewById(R.id.refundButton);
-        refundButton.setOnClickListener(this);
+        refundButton = getActivity().findViewById(R.id.refundButton);
+        refundButton.setVisibility(View.GONE);
+        //refundButton.setOnClickListener(this);
 
         ImageButton searchButton = getActivity().findViewById(R.id.searchButton);
         searchButton.setOnClickListener(this);
@@ -140,6 +153,27 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
 
         ImageButton closeSearchButton = getActivity().findViewById(R.id.closeSearchButton);
         closeSearchButton.setOnClickListener(this);
+
+        Calendar now = Calendar.getInstance();
+        DatePickerDialog.OnDateSetListener fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                fromTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            }
+        };
+
+        fromDatePickerDialog = new DatePickerDialog(
+                getActivity(), fromDateSetListener, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
+
+        DatePickerDialog.OnDateSetListener toDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                toTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            }
+        };
+
+        toDatePickerDialog = new DatePickerDialog(
+                getActivity(), toDateSetListener, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
 
         pageNumber = 1;
         loadOrders(pageNumber);
@@ -213,19 +247,10 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
         creditTextView.setText(String.format("$%.2f",Float.parseFloat(info.getRewardsCredit())));
         taxTextView.setText(String.format("$%.2f",Float.parseFloat(info.getTaxAmount())));
         totalTextView.setText(String.format("$%.2f",Float.parseFloat(info.getTotalPrice())));
+        rewardTextView.setText("+" + info.getRewards());
 
         statusImageView.setVisibility(View.VISIBLE);
         statusImageView.setImageResource(R.drawable.progress_completed);
-
-        int rewards = 0;
-        if (info.getDetails().size() > 0) {
-            for (int i = 0; i<info.getDetails().size(); i++) {
-                if (info.getDetails().get(i).getDrinkable().equals("1") && info.getDetails().get(i).getRedeemed().equals("0")) {
-                    rewards = rewards + 1 * Integer.parseInt(info.getDetails().get(i).getQuantity());
-                }
-            }
-        }
-        rewardTextView.setText("+" + rewards);
 
         detailsOrderListView.setVisibility(View.VISIBLE);
         detailsOrderListAdapter = new DetailsOrderListAdapter(getActivity(), info.getDetails());
@@ -239,6 +264,15 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
         orderEditText.setText("");
         fromTextView.setText("");
         toTextView.setText("");
+        hideKeyboard();
+    }
+
+    public void hideKeyboard() {
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private void searchOrder(String firstName, String lastName, String order, String fromDate, String toDate) {
@@ -320,21 +354,47 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
                 String firstName = firstNameEditText.getText().toString();
                 String lastName = lastNameEditText.getText().toString();
                 String order = orderEditText.getText().toString();
+                String newOrder = Integer.toString(Integer.parseInt(order));
                 String fromDate = fromTextView.getText().toString();
                 String toDate = toTextView.getText().toString();
 
-                if (firstName.isEmpty() && lastName.isEmpty() && order.isEmpty()) {
-                    if (fromDate.isEmpty() && toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
+                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+                    break;
+                } else {
+                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
+                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                    }
+                    if (!fromDate.isEmpty() && toDate.isEmpty()) {
+                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
                         break;
-                    } else if (fromDate.isEmpty() || toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date_search), null, null);
-                        break;
+                    }
+
+                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+                        try {
+                            Date from = formatter.parse(fromDate);
+                            Date to = formatter.parse(toDate);
+                            if(from.compareTo(to) > 0) {
+                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                                return;
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                            return;
+                        }
                     }
                 }
 
                 searchOrder(firstName, lastName, order, fromDate, toDate);
 
+                break;
+
+            case R.id.fromTextView:
+                fromDatePickerDialog.show();
+                break;
+
+            case R.id.toTextView:
+                toDatePickerDialog.show();
                 break;
 
         }

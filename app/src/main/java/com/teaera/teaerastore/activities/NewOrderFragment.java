@@ -1,27 +1,47 @@
 package com.teaera.teaerastore.activities;
 
 
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.teaera.teaerastore.R;
 import com.teaera.teaerastore.adapter.DetailsOrderListAdapter;
 import com.teaera.teaerastore.adapter.OrderListAdapter;
 import com.teaera.teaerastore.app.Application;
 import com.teaera.teaerastore.net.Model.OrderInfo;
+import com.teaera.teaerastore.net.Model.OrderItemInfo;
 import com.teaera.teaerastore.net.Request.GetOrdersRequest;
 import com.teaera.teaerastore.net.Request.SearchOrderRequest;
 import com.teaera.teaerastore.net.Request.UpdateOrderRequest;
@@ -31,12 +51,19 @@ import com.teaera.teaerastore.net.Response.SearchOrdersResponse;
 import com.teaera.teaerastore.preference.StorePrefs;
 import com.teaera.teaerastore.utils.DialogUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
+import java.util.UUID;
 
-import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -72,16 +99,41 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     private Button progressStatusButton;
     private Button readyStatusButton;
     private Button completedStatusButton;
+    private Button refundButton;
 
     private RelativeLayout customerRelativeLayout;
     private RelativeLayout searchRelativeLayout;
     private RelativeLayout noResultLayout;
+
+    private DatePickerDialog fromDatePickerDialog;
+    private DatePickerDialog toDatePickerDialog;
 
     private ProgressDialog dialog;
     int pageNumber = 1;
     int selectedOrder = 0;
     public ArrayList<OrderInfo> orders = new ArrayList<OrderInfo>();
     public boolean isSearched = false;
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+    // android built in classes for bluetooth operations
+    BluetoothAdapter mBluetoothAdapter;
+    BluetoothSocket mmSocket;
+    BluetoothDevice mmDevice;
+
+    // needed for communication to bluetooth device / network
+    OutputStream mmOutputStream;
+    InputStream mmInputStream;
+    Thread workerThread;
+
+
+    private static Font menuNameFont = new Font(Font.FontFamily.HELVETICA, 3,
+            Font.BOLD);
+    private static Font font = new Font(Font.FontFamily.HELVETICA, 2,
+            Font.NORMAL);
+    private static Font dateFont = new Font(Font.FontFamily.HELVETICA, 1,
+            Font.NORMAL);
+
+
 
     public NewOrderFragment() {
         // Required empty public constructor
@@ -96,6 +148,13 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         init();
     }
 
@@ -121,6 +180,9 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         orderEditText = getActivity().findViewById(R.id.orderEditText);
         fromTextView = getActivity().findViewById(R.id.fromTextView);
         toTextView = getActivity().findViewById(R.id.toTextView);
+        fromTextView.setOnClickListener(this);
+        toTextView.setOnClickListener(this);
+
 
         statusImageView = getActivity().findViewById(R.id.statusImageView);
         progressStatusButton = getActivity().findViewById(R.id.progressStatusButton);
@@ -140,7 +202,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         noResultLayout = getActivity().findViewById(R.id.noResultLayout);
         noResultLayout.setVisibility(View.GONE);
 
-        Button refundButton = getActivity().findViewById(R.id.refundButton);
+        refundButton = getActivity().findViewById(R.id.refundButton);
         refundButton.setOnClickListener(this);
 
         ImageButton searchButton = getActivity().findViewById(R.id.searchButton);
@@ -151,6 +213,27 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
         ImageButton closeSearchButton = getActivity().findViewById(R.id.closeSearchButton);
         closeSearchButton.setOnClickListener(this);
+
+        Calendar now = Calendar.getInstance();
+        DatePickerDialog.OnDateSetListener fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                fromTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            }
+        };
+
+        fromDatePickerDialog = new DatePickerDialog(
+                getActivity(), fromDateSetListener, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
+
+        DatePickerDialog.OnDateSetListener toDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                toTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            }
+        };
+
+        toDatePickerDialog = new DatePickerDialog(
+                getActivity(), toDateSetListener, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
 
         pageNumber = 1;
         loadOrders(pageNumber);
@@ -225,18 +308,9 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         creditTextView.setText(String.format("$%.2f",Float.parseFloat(info.getRewardsCredit())));
         taxTextView.setText(String.format("$%.2f",Float.parseFloat(info.getTaxAmount())));
         totalTextView.setText(String.format("$%.2f",Float.parseFloat(info.getTotalPrice())));
+        rewardTextView.setText("+" + info.getRewards());
 
         showStatus(info.getStatus());
-
-        int rewards = 0;
-        if (info.getDetails().size() > 0) {
-            for (int i = 0; i<info.getDetails().size(); i++) {
-                if (info.getDetails().get(i).getDrinkable().equals("1") && info.getDetails().get(i).getRedeemed().equals("0")) {
-                    rewards = rewards + 1 * Integer.parseInt(info.getDetails().get(i).getQuantity());
-                }
-            }
-        }
-        rewardTextView.setText("+" + rewards);
 
         detailsOrderListView.setVisibility(View.VISIBLE);
         detailsOrderListAdapter = new DetailsOrderListAdapter(getActivity(), info.getDetails());
@@ -244,12 +318,14 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     }
 
     private void showStatus(String status) {
+        refundButton.setVisibility(View.GONE);
         progressStatusButton.setEnabled(false);
         readyStatusButton.setEnabled(false);
         completedStatusButton.setEnabled(false);
 
         switch (status) {
             case "0":
+                refundButton.setVisibility(View.VISIBLE);
                 statusImageView.setVisibility(View.VISIBLE);
                 statusImageView.setImageResource(R.drawable.progress_new);
                 progressStatusButton.setEnabled(true);
@@ -277,13 +353,12 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         orderEditText.setText("");
         fromTextView.setText("");
         toTextView.setText("");
+        hideKeyboard();
     }
 
     private void updateStatus(final String status) {
 
         OrderInfo info = orders.get(selectedOrder);
-
-
         showLoader(R.string.empty);
 
         Application.getServerApi().updateOrderStatus(new UpdateOrderRequest(info.getId(), status)).enqueue(new Callback<BaseResponse>(){
@@ -300,6 +375,11 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                         orders.remove(selectedOrder);
                     }
                     updateOrderList(selectedOrder);
+
+                    if (status == "1") {
+                        //printOrders();
+                        printPDF();
+                    }
                 }
             }
 
@@ -314,6 +394,196 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
             }
         });
 
+    }
+
+    // Print
+
+    private void printPDF() {
+
+        ArrayList<OrderItemInfo> orderItemInfos = orders.get(selectedOrder).getDetails();
+        if (orderItemInfos.size() == 0) {
+            return;
+        }
+
+        ArrayList<OrderItemInfo> printInfos = new ArrayList<OrderItemInfo>();
+        for (int i=0; i<orderItemInfos.size(); i++) {
+
+            OrderItemInfo item = orderItemInfos.get(i);
+            int quantity = Integer.parseInt(item.getQuantity()) - Integer.parseInt(item.getRefundQuantity());
+
+            for (int j=0; j<quantity; j++) {
+                printInfos.add(item);
+            }
+        }
+
+        File newFile = new File(Environment.getExternalStorageDirectory().toString() + "/teaera/" + "order11.pdf");
+
+        try {
+            newFile.createNewFile();
+            Document document = new Document();
+            Rectangle one = new Rectangle(55,32);
+            document.setPageSize(one);
+
+            try {
+                PdfWriter.getInstance(document, new FileOutputStream(newFile));
+                document.setMargins(1, 1, 1, 0);
+                document.open();
+
+                for (int i=0; i<printInfos.size(); i++) {
+
+                    PdfPTable table = new PdfPTable(2);
+                    table.setTotalWidth(53);
+                    table.setLockedWidth(true);
+                    table.setWidths(new int[]{ 4, 1});
+
+                    PdfPCell cell;
+                    cell = new PdfPCell(new Phrase(printInfos.get(i).getMenuName(), menuNameFont));
+                    cell.setFixedHeight(7);
+                    cell.setColspan(2);
+                    table.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(printInfos.get(i).getOptions(), font));
+                    cell.setFixedHeight(18);
+                    table.addCell(cell);
+
+                    PdfPTable table1 = new PdfPTable(1);
+                    cell = new PdfPCell(new Phrase(Integer.toString(i+1), font));
+                    cell.setFixedHeight(6);
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table1.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(Integer.toString(printInfos.size()), font));
+                    cell.setFixedHeight(6);
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table1.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(this.orders.get(selectedOrder).getTimestamp(), dateFont));
+                    cell.setFixedHeight(6);
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    table1.addCell(cell);
+                    table.addCell(new PdfPCell(table1));
+
+                    document.add(table);
+
+                    table = new PdfPTable(2);
+                    table.setTotalWidth(53);
+                    table.setLockedWidth(true);
+                    table.setWidths(new int[]{ 1, 1});
+
+                    int orderId = Integer.parseInt(orders.get(i).getId());
+                    cell = new PdfPCell(new Paragraph(String.format("MOBILE #%05d", orderId), font));
+                    cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    cell.setBorder(Rectangle.NO_BORDER);
+                    table.addCell(cell);
+
+                    cell = new PdfPCell(new Phrase(orders.get(selectedOrder).getUserName(), font));
+                    cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    cell.setBorder(Rectangle.NO_BORDER);
+                    table.addCell(cell);
+
+                    document.add(table);
+                    if (i != printInfos.size()-1) {
+                        document.newPage();
+                    }
+                }
+
+                document.close();
+
+                Toast.makeText(getActivity(), "PDF is generated successfully!",
+                        Toast.LENGTH_SHORT).show();
+
+            } catch (DocumentException e) {
+                e.printStackTrace();
+            }
+        } catch(IOException e) {
+            // ...
+        }
+    }
+
+
+    private void printOrders() {
+
+        try {
+            findPrinter();
+            openPrinter();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
+    private void findPrinter() {
+        try {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if(mBluetoothAdapter == null) {
+                Toast.makeText(getActivity(), "No bluetooth adapter available",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetooth, 0);
+            }
+
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+            String printNames = "";
+            if(pairedDevices.size() > 0) {
+                for (BluetoothDevice device : pairedDevices) {
+
+                    // RPP300 is the name of the bluetooth printer device
+                    // we got this name from the list of paired devices
+                    printNames = printNames + device.getName() + "\n";
+                    if (device.getName().equals("your Device Name")) {
+                        mmDevice = device;
+                        break;
+                    }
+                }
+            }
+
+//            Toast.makeText(getApplicationContext(), "Bluetooth device found.",
+//                    Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(getActivity(), printNames,
+                    Toast.LENGTH_LONG).show();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // tries to open a connection to the bluetooth printer device
+    void openPrinter() throws IOException {
+        try {
+
+            // Standard SerialPortService ID
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+            mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+            mmSocket.connect();
+            mmOutputStream = mmSocket.getOutputStream();
+            //mmInputStream = mmSocket.getInputStream();
+
+
+//            myLabel.setText("Bluetooth Opened");
+//            Toast.makeText(getApplicationContext(), "Your toast message",
+//                    Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // close the connection to bluetooth printer.
+    void closePrinter() throws IOException {
+        try {
+
+            mmOutputStream.close();
+            //mmInputStream.close();
+            mmSocket.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -352,6 +622,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
             }
         });
     }
+
 
     @Override
     public void onOrderItemClickListener(OrderInfo info, int position) {
@@ -395,20 +666,38 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                 String firstName = firstNameEditText.getText().toString();
                 String lastName = lastNameEditText.getText().toString();
                 String order = orderEditText.getText().toString();
+                String newOrder = Integer.toString(Integer.parseInt(order));
                 String fromDate = fromTextView.getText().toString();
                 String toDate = toTextView.getText().toString();
 
-                if (firstName.isEmpty() && lastName.isEmpty() && order.isEmpty()) {
-                    if (fromDate.isEmpty() && toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
+                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+                    break;
+                } else {
+                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
+                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                    }
+                    if (!fromDate.isEmpty() && toDate.isEmpty()) {
+                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
                         break;
-                    } else if (fromDate.isEmpty() || toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date_search), null, null);
-                        break;
+                    }
+
+                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+                        try {
+                            Date from = formatter.parse(fromDate);
+                            Date to = formatter.parse(toDate);
+                            if(from.compareTo(to) > 0) {
+                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                                return;
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                            return;
+                        }
                     }
                 }
 
-                searchOrder(firstName, lastName, order, fromDate, toDate);
+                searchOrder(firstName, lastName, newOrder, fromDate, toDate);
 
                 break;
 
@@ -423,6 +712,14 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
             case R.id.completedStatusButton:
                 updateStatus("3");
                 break;
+
+            case R.id.fromTextView:
+                fromDatePickerDialog.show();
+                break;
+
+            case R.id.toTextView:
+                toDatePickerDialog.show();
+                break;
         }
     }
 
@@ -434,6 +731,14 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     public void hideLoader() {
         if (dialog != null) {
             dialog.dismiss();
+        }
+    }
+
+    public void hideKeyboard() {
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 

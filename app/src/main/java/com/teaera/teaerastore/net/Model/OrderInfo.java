@@ -14,12 +14,14 @@ public class OrderInfo implements Serializable {
     private String email;
     private String userName;
     private int rewardStar;
+    private int rewards;
     private String subTotal;
     private String rewardsCredit;
     private String tax;
     private String taxAmount;
     private String totalPrice;
     private String status;
+    private String waitingTime;
     private String timestamp;
     private ArrayList<OrderItemInfo> details;
 
@@ -56,6 +58,13 @@ public class OrderInfo implements Serializable {
     }
     public void setRewardStar(int rewardStar) {
         this.rewardStar = rewardStar;
+    }
+
+    public int getRewards() {
+        return rewards;
+    }
+    public void setRewards(int rewards) {
+        this.rewards = rewards;
     }
 
     public String getSubTotal() {
@@ -99,6 +108,14 @@ public class OrderInfo implements Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getWaitingTime() {
+        return waitingTime;
+    }
+    public void setWaitingTime(String waitingTime) {
+        this.waitingTime = waitingTime;
+    }
+
 
     public String getTimestamp() {
         return timestamp;

@@ -43,7 +43,7 @@
                 android:layout_toRightOf="@+id/imageView15"
                 android:text="@string/cutomer_info"
                 android:textColor="@android:color/black"
-                android:textSize="24dp"
+                android:textSize="20dp"
                 android:typeface="monospace" />
 
             <Button

@@ -33,7 +33,7 @@
                     android:layout_marginStart="25dp"
                     android:text="@string/menu_new_orders"
                     android:textColor="@android:color/black"
-                    android:textSize="24dp"
+                    android:textSize="20dp"
                     android:typeface="monospace" />
 
                 <ImageButton
@@ -103,7 +103,7 @@
                         android:layout_marginStart="25dp"
                         android:text="ORDER"
                         android:textColor="@android:color/black"
-                        android:textSize="22sp"
+                        android:textSize="20sp"
                         android:typeface="monospace" />
                 </RelativeLayout>
 
@@ -808,7 +808,7 @@
                             android:gravity="center_vertical"
                             android:textAlignment="center"
                             android:textColor="@android:color/white"
-                            android:textSize="24dp"
+                            android:textSize="16dp"
                             android:typeface="monospace" />
 
                         <ImageView
@@ -855,7 +855,7 @@
                             android:gravity="center_vertical"
                             android:textAlignment="center"
                             android:textColor="@android:color/white"
-                            android:textSize="24dp"
+                            android:textSize="16dp"
                             android:typeface="monospace" />
 
                         <ImageView

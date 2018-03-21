@@ -1,7 +1,9 @@
 package com.teaera.teaerastore.activities;
 
 
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,7 +11,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,22 +26,19 @@ import com.teaera.teaerastore.adapter.DetailsOrderListAdapter;
 import com.teaera.teaerastore.adapter.OrderListAdapter;
 import com.teaera.teaerastore.app.Application;
 import com.teaera.teaerastore.net.Model.OrderInfo;
-import com.teaera.teaerastore.net.Request.GetOrdersRequest;
 import com.teaera.teaerastore.net.Request.SearchOrderRequest;
 import com.teaera.teaerastore.net.Request.UpdateOrderRequest;
 import com.teaera.teaerastore.net.Response.BaseResponse;
-import com.teaera.teaerastore.net.Response.GetOrdersResponse;
 import com.teaera.teaerastore.net.Response.SearchOrdersResponse;
-import com.teaera.teaerastore.preference.SearchOrderPrefs;
 import com.teaera.teaerastore.preference.StorePrefs;
 import com.teaera.teaerastore.utils.DialogUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
-import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -76,13 +77,19 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
     private RelativeLayout customerRelativeLayout;
     private RelativeLayout searchRelativeLayout;
     private RelativeLayout noResultLayout;
+    private Button refundButton;
 
+    private DatePickerDialog fromDatePickerDialog;
+    private DatePickerDialog toDatePickerDialog;
 
     private ProgressDialog dialog;
     int pageNumber = 1;
     int selectedOrder = 0;
     public ArrayList<OrderInfo> orders = new ArrayList<OrderInfo>();
     public boolean isSearched = false;
+    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+
 
     public SearchFragment() {
         // Required empty public constructor
@@ -123,6 +130,8 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         orderEditText = getActivity().findViewById(R.id.orderEditText);
         fromTextView = getActivity().findViewById(R.id.fromTextView);
         toTextView = getActivity().findViewById(R.id.toTextView);
+        fromTextView.setOnClickListener(this);
+        toTextView.setOnClickListener(this);
 
         statusImageView = getActivity().findViewById(R.id.statusImageView);
         progressStatusButton = getActivity().findViewById(R.id.progressStatusButton);
@@ -141,7 +150,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         noResultLayout = getActivity().findViewById(R.id.noResultLayout);
         noResultLayout.setVisibility(View.VISIBLE);
 
-        Button refundButton = getActivity().findViewById(R.id.refundButton);
+        refundButton = getActivity().findViewById(R.id.refundButton);
         refundButton.setOnClickListener(this);
 
         ImageButton searchButton = getActivity().findViewById(R.id.searchButton);
@@ -152,6 +161,28 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
 
         ImageButton closeSearchButton = getActivity().findViewById(R.id.closeSearchButton);
         closeSearchButton.setOnClickListener(this);
+
+        Calendar now = Calendar.getInstance();
+        DatePickerDialog.OnDateSetListener fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                fromTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            }
+        };
+
+        fromDatePickerDialog = new DatePickerDialog(
+                getActivity(), fromDateSetListener, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
+
+        DatePickerDialog.OnDateSetListener toDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                toTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            }
+        };
+
+        toDatePickerDialog = new DatePickerDialog(
+                getActivity(), toDateSetListener, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
+
 
         isSearched = false;
 
@@ -197,30 +228,23 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         creditTextView.setText(String.format("$%.2f",Float.parseFloat(info.getRewardsCredit())));
         taxTextView.setText(String.format("$%.2f",Float.parseFloat(info.getTaxAmount())));
         totalTextView.setText(String.format("$%.2f",Float.parseFloat(info.getTotalPrice())));
+        rewardTextView.setText("+" + info.getRewards());
 
         showStatus(info.getStatus());
-
-        int rewards = 0;
-        if (info.getDetails().size() > 0) {
-            for (int i = 0; i<info.getDetails().size(); i++) {
-                if (info.getDetails().get(i).getDrinkable().equals("1") && info.getDetails().get(i).getRedeemed().equals("0")) {
-                    rewards = rewards + 1 * Integer.parseInt(info.getDetails().get(i).getQuantity());
-                }
-            }
-        }
-        rewardTextView.setText("+" + rewards);
 
         detailsOrderListAdapter = new DetailsOrderListAdapter(getActivity(), info.getDetails());
         detailsOrderListView.setAdapter(detailsOrderListAdapter);
     }
 
     private void showStatus(String status) {
+        refundButton.setVisibility(View.GONE);
         progressStatusButton.setEnabled(false);
         readyStatusButton.setEnabled(false);
         completedStatusButton.setEnabled(false);
 
         switch (status) {
             case "0":
+                refundButton.setVisibility(View.VISIBLE);
                 statusImageView.setVisibility(View.VISIBLE);
                 statusImageView.setImageResource(R.drawable.progress_new);
                 progressStatusButton.setEnabled(true);
@@ -252,6 +276,15 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         orderEditText.setText("");
         fromTextView.setText("");
         toTextView.setText("");
+        hideKeyboard();
+    }
+
+    public void hideKeyboard() {
+        View view = getActivity().getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private void updateStatus(final String status) {
@@ -360,16 +393,34 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
                 String firstName = firstNameEditText.getText().toString();
                 String lastName = lastNameEditText.getText().toString();
                 String order = orderEditText.getText().toString();
+                String newOrder = Integer.toString(Integer.parseInt(order));
                 String fromDate = fromTextView.getText().toString();
                 String toDate = toTextView.getText().toString();
 
-                if (firstName.isEmpty() && lastName.isEmpty() && order.isEmpty()) {
-                    if (fromDate.isEmpty() && toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
+                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+                    break;
+                } else {
+                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
+                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                    }
+                    if (!fromDate.isEmpty() && toDate.isEmpty()) {
+                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
                         break;
-                    } else if (fromDate.isEmpty() || toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date_search), null, null);
-                        break;
+                    }
+
+                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+                        try {
+                            Date from = formatter.parse(fromDate);
+                            Date to = formatter.parse(toDate);
+                            if(from.compareTo(to) > 0) {
+                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                                return;
+                            }
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                            return;
+                        }
                     }
                 }
 
@@ -387,6 +438,14 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
 
             case R.id.completedStatusButton:
                 updateStatus("3");
+                break;
+
+            case R.id.fromTextView:
+                fromDatePickerDialog.show();
+                break;
+
+            case R.id.toTextView:
+                toDatePickerDialog.show();
                 break;
 
         }

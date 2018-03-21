@@ -14,7 +14,9 @@ public class OrderItemInfo implements Serializable {
     private String menuName;
     private String options;
     private String price;
+    private String rewards;
     private String quantity;
+    private String refund_quantity;
     private String redeemed;
     private String drinkable;
     private String refunded;
@@ -61,11 +63,26 @@ public class OrderItemInfo implements Serializable {
         this.price = price;
     }
 
+    public String getRewards() {
+        return rewards;
+    }
+
+    public void setRewards(String rewards) {
+        this.rewards = rewards;
+    }
+
     public String getQuantity() {
         return quantity;
     }
     public void setQuantity(String quantity) {
         this.quantity = quantity;
+    }
+
+    public String getRefundQuantity() {
+        return refund_quantity;
+    }
+    public void setRefundQuantity(String quantity) {
+        this.refund_quantity = quantity;
     }
 
     public String getRedeemed() {

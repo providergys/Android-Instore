@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -61,6 +62,8 @@ public class RefundOrderListAdapter extends BaseAdapter {
         TextView quantityTextView;
         TextView detailsTextView;
         ImageButton checkImageButton;
+        Button minusButton;
+        Button plusButton;
     }
 
     @Override
@@ -74,14 +77,16 @@ public class RefundOrderListAdapter extends BaseAdapter {
         holder.costTextView = rowView.findViewById(R.id.costTextView);
         holder.quantityTextView = rowView.findViewById(R.id.quantityTextView);
         holder.checkImageButton = rowView.findViewById(R.id.checkImageButton);
+        holder.minusButton = rowView.findViewById(R.id.minusButton);
+        holder.plusButton = rowView.findViewById(R.id.plusButton);
 
         holder.menuTextView.setText(orderItems.get(position).getMenuName());
         holder.detailsTextView.setText(orderItems.get(position).getOptions());
-        holder.quantityTextView.setText(orderItems.get(position).getQuantity());
-        float totalPrice = Float.parseFloat(orderItems.get(position).getPrice())*Integer.parseInt(orderItems.get(position).getQuantity());
-        holder.costTextView.setText(String.format("$%.2f", totalPrice));
+        //float totalPrice = Float.parseFloat(orderItems.get(position).getPrice())*Integer.parseInt(orderItems.get(position).getQuantity());
+        holder.costTextView.setText(String.format("$%.2f", Float.parseFloat(orderItems.get(position).getPrice())));
 
         if (checkList.get(position) == 0) {
+            holder.quantityTextView.setText("0");
             holder.checkImageButton.setImageResource(R.drawable.refund_uncheck);
             holder.checkImageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -90,12 +95,27 @@ public class RefundOrderListAdapter extends BaseAdapter {
                 }
             });
         } else {
+            holder.quantityTextView.setText(orderItems.get(position).getQuantity());
             holder.checkImageButton.setImageResource(R.drawable.refund_check);
             if (checkList.get(position) == 2) {
                 holder.checkImageButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         onRefundCheckListener.onUnRefundCheckClicked(position);
+                    }
+                });
+
+                holder.plusButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onRefundCheckListener.onPlusClicked(position);
+                    }
+                });
+
+                holder.minusButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onRefundCheckListener.onMinusClicked(position);
                     }
                 });
             }
@@ -108,8 +128,14 @@ public class RefundOrderListAdapter extends BaseAdapter {
         this.checkList = checkList;
     }
 
+    public void updateOrderItems(ArrayList<OrderItemInfo> orderItems) {
+        this.orderItems = orderItems;
+    }
+
     public interface OnRefundCheckListener {
         public void onRefundCheckClicked(int position);
         public void onUnRefundCheckClicked(int position);
+        public void onPlusClicked(int position);
+        public void onMinusClicked(int position);
     }
 }

@@ -15,7 +15,7 @@
     <string name="menu_store_profile">STORE PROFILE</string>
     <string name="menu_signout">SIGN OUT</string>
 
-    <string name="empty_search_options">Please add search options.</string>
+    <string name="empty_search_options">Please choose search options.</string>
     <string name="error_date_search">Please choose both date.</string>
 
     <!-- New Order -->
@@ -42,7 +42,13 @@
     <string name="print_report">Print Report</string>
     <string name="report_from">From:</string>
     <string name="report_to">to</string>
-    <string name="error_closing_hour">Choose vaild closing hour.</string>
+    <string name="error_closing_hour">Choose valid closing hour.</string>
+    <string name="error_print_date">Please choose date.</string>
+    <string name="error_date_range">You can choose date within a month. Please choose again.</string>
+    <string name="no_print_date">There is no orders within date.</string>
+
+    <string name="error_date">Please choose date range again.</string>
+
 
     <!-- Refund -->
     <string name="refund">REFUND</string>
@@ -64,6 +70,5 @@
     <!-- Customer Info -->
     <string name="search">SEARCH</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>
