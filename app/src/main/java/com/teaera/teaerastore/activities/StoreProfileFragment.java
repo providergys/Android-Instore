@@ -1,14 +1,28 @@
 package com.teaera.teaerastore.activities;
 
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
+import android.print.PageRange;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
+import android.print.PrintManager;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,6 +49,10 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.teaera.teaerastore.R;
 import com.teaera.teaerastore.app.Application;
 import com.teaera.teaerastore.net.Model.OrderInfo;
@@ -48,6 +66,8 @@ import com.teaera.teaerastore.preference.StorePrefs;
 import com.teaera.teaerastore.utils.DialogUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +77,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -89,6 +110,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
     private String[] hours = {"- None -", "12:00 AM", "12:30 AM", "1:00 AM", "1:30 AM", "2:00 AM", "2:30 AM", "3:00 AM", "3:30 AM", "4:00 AM", "4:30 AM", "5:00 AM", "5:30 AM", "6:00 AM", "6:30 AM", "7:00 AM", "7:30 AM", "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM", "10:00 PM", "10:30 PM", "11:00 PM", "11:30 PM", "12:00 AM"};
 
     private ProgressDialog dialog;
+    Activity ac;
 
     private DatePickerDialog fromDatePickerDialog;
     private DatePickerDialog toDatePickerDialog;
@@ -136,6 +158,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
     public void onViewCreated(View view, Bundle savedInstanceState) {
         init();
         updateTimeSpinners();
+        ac = getActivity();
     }
 
     private void init() {
@@ -377,6 +400,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
 
     // Print
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void printPDF(ArrayList<PrintInfo> printInfos, String fromDate, String toDate) {
         float left = 20;
         float right = 20;
@@ -385,7 +409,15 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
         float bottom = 20;
 
 //        File newFile = new File(Environment.getExternalStorageDirectory() + "/" + "report.pdf");
-        File newFile = new File(Environment.getExternalStorageDirectory().toString() + "/teaera/" + "report.pdf");
+//        File newFile = new File(Environment.getExternalStorageDirectory().toString() + "/teaera/" + "report.pdf");
+
+        File dir = new File(Environment.getExternalStorageDirectory() + "/teaera");
+
+        if (!dir.exists()){
+            dir.mkdirs();
+        }
+
+        File newFile = new File(Environment.getExternalStorageDirectory() + "/teaera/" + "report.pdf");
 
         try {
             newFile.createNewFile();
@@ -539,6 +571,11 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 document.add(table);
                 document.close();
 
+                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
+
+                String jobName = " Report";
+                printManager.print(jobName, pda, null);
+
                 Toast.makeText(getActivity(), "PDF is generated successfully!",
                         Toast.LENGTH_SHORT).show();
 
@@ -549,6 +586,69 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
             // ...
         }
     }
+
+    public static PrintDocumentAdapter pda = new PrintDocumentAdapter(){
+
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+        @Override
+        public void onWrite(PageRange[] pages, ParcelFileDescriptor destination, CancellationSignal cancellationSignal, WriteResultCallback callback){
+            InputStream input = null;
+            OutputStream output = null;
+            File pdf = new  File(Environment.getExternalStorageDirectory() + "/teaera/" + "report.pdf");
+            try {
+
+                input = new FileInputStream(pdf);
+                output = new FileOutputStream(destination.getFileDescriptor());
+
+                byte[] buf = new byte[1024];
+                int bytesRead;
+
+                while ((bytesRead = input.read(buf)) > 0) {
+                    output.write(buf, 0, bytesRead);
+                }
+
+                callback.onWriteFinished(new PageRange[]{PageRange.ALL_PAGES});
+
+            } catch (FileNotFoundException ee){
+                ee.printStackTrace();
+
+                //Catch exception
+            } catch (Exception e) {
+                e.printStackTrace();
+                //Catch exception
+            } finally {
+                try {
+                    input.close();
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                }
+            }
+        }
+
+        @Override
+        public void onFinish() {
+
+
+            super.onFinish();
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+        @Override
+        public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, PrintDocumentAdapter.LayoutResultCallback callback, Bundle extras){
+
+            if (cancellationSignal.isCanceled()) {
+                callback.onLayoutCancelled();
+                return;
+            }
+
+
+            PrintDocumentInfo pdi = new PrintDocumentInfo.Builder("Report.pdf").setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT).build();
+
+            callback.onLayoutFinished(pdi, true);
+        }
+    };
 
     private void connectPrinter() {
         try {
@@ -664,7 +764,24 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 saveStoreData();
                 break;
             case R.id.processImageButton:
-                checkDateValidation();
+                //Permission check and ask for required permission
+                Dexter.withActivity(ac)
+                        .withPermissions(
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                        ).withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+
+                        Toast.makeText(ac, "permission granted", Toast.LENGTH_SHORT).show();
+                        checkDateValidation();
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<com.karumi.dexter.listener.PermissionRequest> permissions, PermissionToken token) {
+                    }
+
+                }).check();
                 break;
         }
     }
