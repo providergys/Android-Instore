@@ -20,6 +20,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.teaera.teaerastore.app.Application.isNetworkConnected;
+
 public class SplashActivity extends BaseActivity {
 
     private final int SPLASH_DISPLAY_LENGTH = 2000;
@@ -43,10 +45,15 @@ public class SplashActivity extends BaseActivity {
     }
 
     private void getStores() {
-//        showLoader(R.string.empty);
+
+//   showLoader(R.string.empty);
+
+        if (!isNetworkConnected(this)) {
+            DialogUtils.showDialog(this, "Error", getString(R.string.internet_error), null, null);
+            return;
+        }
 
         Application.getServerApi().getStores().enqueue(new Callback<GetStoresResponse>(){
-
             @Override
             public void onResponse(Call<GetStoresResponse> call, Response<GetStoresResponse> response) {
 //                hideLoader();
@@ -64,7 +71,8 @@ public class SplashActivity extends BaseActivity {
 
             @Override
             public void onFailure(Call<GetStoresResponse> call, Throwable t) {
-//                hideLoader();
+
+//              hideLoader();
                 if (t.getLocalizedMessage() != null) {
                     Log.d("Splash", t.getLocalizedMessage());
                 } else {
@@ -74,10 +82,14 @@ public class SplashActivity extends BaseActivity {
         });
     }
 
-
     private void loadData() {
-        Application.getServerApi().getStoreById(new GetStoreRequest(StorePrefs.getStoreInfo(this).getId())).enqueue(new Callback<StoreResponse>(){
 
+        if (!isNetworkConnected(this)) {
+            DialogUtils.showDialog(this, "Error", getString(R.string.internet_error), null, null);
+            return;
+        }
+
+        Application.getServerApi().getStoreById(new GetStoreRequest(StorePrefs.getStoreInfo(this).getId())).enqueue(new Callback<StoreResponse>(){
             @Override
             public void onResponse(Call<StoreResponse> call, Response<StoreResponse> response) {
                 if (response.body().isError()) {
@@ -100,11 +112,7 @@ public class SplashActivity extends BaseActivity {
                 }
             }
         });
-
-
-
 //        showLoader(R.string.empty);
-//
 //        Application.getServerApi().getCategories().enqueue(new Callback<GetCategoryResponse>(){
 //
 //            @Override
@@ -135,5 +143,4 @@ public class SplashActivity extends BaseActivity {
 //            }
 //        });
     }
-
 }

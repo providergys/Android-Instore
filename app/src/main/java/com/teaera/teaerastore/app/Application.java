@@ -1,5 +1,8 @@
 package com.teaera.teaerastore.app;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+
 import com.teaera.teaerastore.net.ServerAPI;
 import com.teaera.teaerastore.utils.FontsOverride;
 
@@ -41,5 +44,12 @@ public class Application extends android.app.Application {
     public static ServerAPI getServerApi() {
         return serverApi;
     }
+
+    public static boolean isNetworkConnected(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null;
+    }
+
 
 }

@@ -69,6 +69,6 @@
 
     <!-- Customer Info -->
     <string name="search">SEARCH</string>
-
+    <string name="internet_error">You don\'t have a network right now. Please try connecting your device to the internet.</string>
 
 </resources>

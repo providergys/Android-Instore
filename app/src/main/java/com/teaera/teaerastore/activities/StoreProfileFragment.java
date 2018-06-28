@@ -310,6 +310,8 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                         DialogUtils.showDialog(getActivity(), "Error", response.body().getMessage(), null, null);
                     } else {
                         StorePrefs.saveStoreInfo(getActivity(), response.body().getStoreInfo());
+                        DialogUtils.showDialog(getActivity(), "Error", response.body().getMessage(), null, null);
+
                     }
                 }
 
@@ -397,19 +399,18 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
         });
     }
 
-
     // Print
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void printPDF(ArrayList<PrintInfo> printInfos, String fromDate, String toDate) {
+
         float left = 20;
         float right = 20;
-
         float top = 30;
         float bottom = 20;
 
-//        File newFile = new File(Environment.getExternalStorageDirectory() + "/" + "report.pdf");
-//        File newFile = new File(Environment.getExternalStorageDirectory().toString() + "/teaera/" + "report.pdf");
+//      File newFile = new File(Environment.getExternalStorageDirectory() + "/" + "report.pdf");
+//      File newFile = new File(Environment.getExternalStorageDirectory().toString() + "/teaera/" + "report.pdf");
 
         File dir = new File(Environment.getExternalStorageDirectory() + "/teaera");
 
@@ -442,7 +443,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 document.add(preface);
                 document.add(new LineSeparator());
 
-
                 preface = new Paragraph();
                 preface.add(new Paragraph("Transaction Requestes:", font));
                 preface.add(new Paragraph(convertDate(fromDate) + " to " + convertDate(toDate), font));
@@ -455,19 +455,18 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                     total = total + Float.parseFloat(printInfos.get(i).getTotalPrice());
                     refundTotal = refundTotal + printInfos.get(i).getTotalRefund();
                 }
+
                 preface = new Paragraph();
                 preface.add(new Paragraph(String.format("Total Sales ($): %.2f", total), font));
                 preface.add(new Paragraph(" "));
                 document.add(preface);
                 document.add(new LineSeparator());
 
-
                 preface = new Paragraph();
                 preface.add(new Paragraph(String.format("Total Refund ($): %.2f", refundTotal), font));
                 preface.add(new Paragraph(" "));
                 document.add(preface);
                 document.add(new LineSeparator());
-
 
                 preface = new Paragraph();
                 preface.add(new Paragraph(" "));
@@ -508,7 +507,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 c1.setHorizontalAlignment(Element.ALIGN_CENTER);
                 table.addCell(c1);
                 table.setHeaderRows(1);
-
 
                 for (int i=0; i<printInfos.size(); i++) {
                     int orderId = Integer.parseInt(printInfos.get(i).getId());
@@ -629,8 +627,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
 
         @Override
         public void onFinish() {
-
-
             super.onFinish();
         }
 
@@ -643,9 +639,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 return;
             }
 
-
             PrintDocumentInfo pdi = new PrintDocumentInfo.Builder("Report.pdf").setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT).build();
-
             callback.onLayoutFinished(pdi, true);
         }
     };
@@ -674,7 +668,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
             }
 
             Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-
             String printNames = "";
             if(pairedDevices.size() > 0) {
                 for (BluetoothDevice device : pairedDevices) {
@@ -689,6 +682,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 }
             }
 
+
 //            Toast.makeText(getApplicationContext(), "Bluetooth device found.",
 //                    Toast.LENGTH_SHORT).show();
 
@@ -702,7 +696,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
     // tries to open a connection to the bluetooth printer device
     void openPrinter() throws IOException {
         try {
-
             // Standard SerialPortService ID
             UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
             mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
@@ -728,7 +721,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
     // close the connection to bluetooth printer.
     void closePrinter() throws IOException {
         try {
-
             mmOutputStream.close();
             //mmInputStream.close();
             mmSocket.close();
@@ -782,6 +774,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                     }
 
                 }).check();
+
                 break;
         }
     }
@@ -798,7 +791,6 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
     }
 
     public String convertDate(String dateString) {
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         SimpleDateFormat newSdf = new SimpleDateFormat("MM/dd/yyyy, hh:mm a");
 

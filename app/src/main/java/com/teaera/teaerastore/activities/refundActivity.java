@@ -252,7 +252,14 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
 
         if (refundItems.size() > 0) {
             showLoader(R.string.empty);
-            Application.getServerApi().refundOrder(new RefundOrderRequest(orderInfo.getUserId(), orderInfo.getId(), subTotalStr, redeemCreditStr, orderInfo.getTax(), taxAmountStr, totalPriceStr, rewards, refundItems)).enqueue(new Callback<RefundOrderResponse>(){
+
+            String redeem = "0";
+            if (rewards>9) {
+                int redeemInt = Integer.parseInt(String.valueOf(rewards / 10));
+                redeem = String.valueOf(redeemInt);
+            }
+
+            Application.getServerApi().refundOrder(new RefundOrderRequest(orderInfo.getUserId(), orderInfo.getId(), subTotalStr, redeemCreditStr, orderInfo.getTax(), taxAmountStr, totalPriceStr, rewards, redeem, refundItems)).enqueue(new Callback<RefundOrderResponse>(){
 
                 @Override
                 public void onResponse(Call<RefundOrderResponse> call, Response<RefundOrderResponse> response) {

@@ -88,7 +88,7 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
 
 
     public CompletedOrderFragment() {
-        // Required empty public constructor
+
     }
 
 
@@ -107,41 +107,41 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
 
     private void init() {
 
-        orderListView = getActivity().findViewById(R.id.orderListView);
-        orderListAdapter = new OrderListAdapter(getActivity(), orders, (OrderListAdapter.OnOrderItemClickListener) this);
+        orderListView           = getActivity().findViewById(R.id.orderListView);
+        orderListAdapter        = new OrderListAdapter(getActivity(), orders, (OrderListAdapter.OnOrderItemClickListener) this);
         orderListView.setAdapter(orderListAdapter);
         detailsOrderListView = getActivity().findViewById(R.id.detailsOrderListView);
 
-        orderNumberTextView = getActivity().findViewById(R.id.orderNumberTextView);
-        dateTextView = getActivity().findViewById(R.id.dateTextView);
-        nameTextView = getActivity().findViewById(R.id.nameTextView);
-        emailTextView = getActivity().findViewById(R.id.emailTextView);
-        subtotalTextView = getActivity().findViewById(R.id.subtotalTextView);
-        creditTextView = getActivity().findViewById(R.id.creditTextView);
-        taxTextView = getActivity().findViewById(R.id.taxTextView);
-        totalTextView = getActivity().findViewById(R.id.totalTextView);
-        rewardTextView = getActivity().findViewById(R.id.rewardTextView);
+        orderNumberTextView     = getActivity().findViewById(R.id.orderNumberTextView);
+        dateTextView            = getActivity().findViewById(R.id.dateTextView);
+        nameTextView            = getActivity().findViewById(R.id.nameTextView);
+        emailTextView           = getActivity().findViewById(R.id.emailTextView);
+        subtotalTextView        = getActivity().findViewById(R.id.subtotalTextView);
+        creditTextView          = getActivity().findViewById(R.id.creditTextView);
+        taxTextView             = getActivity().findViewById(R.id.taxTextView);
+        totalTextView           = getActivity().findViewById(R.id.totalTextView);
+        rewardTextView          = getActivity().findViewById(R.id.rewardTextView);
+        firstNameEditText       = getActivity().findViewById(R.id.firstNameEditText);
+        lastNameEditText        = getActivity().findViewById(R.id.lastNameEditText);
+        orderEditText           = getActivity().findViewById(R.id.orderEditText);
+        fromTextView            = getActivity().findViewById(R.id.fromTextView);
+        toTextView              = getActivity().findViewById(R.id.toTextView);
 
-        firstNameEditText = getActivity().findViewById(R.id.firstNameEditText);
-        lastNameEditText = getActivity().findViewById(R.id.lastNameEditText);
-        orderEditText = getActivity().findViewById(R.id.orderEditText);
-        fromTextView = getActivity().findViewById(R.id.fromTextView);
-        toTextView = getActivity().findViewById(R.id.toTextView);
         fromTextView.setOnClickListener(this);
         toTextView.setOnClickListener(this);
 
-        statusImageView = getActivity().findViewById(R.id.statusImageView);
+        statusImageView         = getActivity().findViewById(R.id.statusImageView);
+        customerRelativeLayout  = getActivity().findViewById(R.id.customerRelativeLayout);
 
-        customerRelativeLayout = getActivity().findViewById(R.id.customerRelativeLayout);
         customerRelativeLayout.setOnClickListener(this);
 
-        searchRelativeLayout = getActivity().findViewById(R.id.searchRelativeLayout);
+        searchRelativeLayout    = getActivity().findViewById(R.id.searchRelativeLayout);
         searchRelativeLayout.setVisibility(View.GONE);
 
-        noResultLayout = getActivity().findViewById(R.id.noResultLayout);
+        noResultLayout          = getActivity().findViewById(R.id.noResultLayout);
         noResultLayout.setVisibility(View.GONE);
 
-        refundButton = getActivity().findViewById(R.id.refundButton);
+        refundButton            = getActivity().findViewById(R.id.refundButton);
         refundButton.setVisibility(View.GONE);
         //refundButton.setOnClickListener(this);
 
@@ -354,38 +354,95 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
                 String firstName = firstNameEditText.getText().toString();
                 String lastName = lastNameEditText.getText().toString();
                 String order = orderEditText.getText().toString();
-                String newOrder = Integer.toString(Integer.parseInt(order));
+                String newOrder ="";
                 String fromDate = fromTextView.getText().toString();
                 String toDate = toTextView.getText().toString();
 
-                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
-                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
-                    break;
-                } else {
-                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                    }
-                    if (!fromDate.isEmpty() && toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                        break;
-                    }
-
-                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
-                        try {
-                            Date from = formatter.parse(fromDate);
-                            Date to = formatter.parse(toDate);
-                            if(from.compareTo(to) > 0) {
-                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                return;
-                            }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                            return;
-                        }
-                    }
+                if (!order.isEmpty()){
+                    newOrder     = Integer.toString(Integer.parseInt(order));
                 }
 
-                searchOrder(firstName, lastName, order, fromDate, toDate);
+                if (!firstName.isEmpty()){
+                    if (!lastName.isEmpty()){
+                        if (!newOrder.isEmpty()){
+                            if (!fromDate.isEmpty() ) {
+                                if (!toDate.isEmpty()){
+                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+                                        try {
+                                            Date from = formatter.parse(fromDate);
+                                            Date to = formatter.parse(toDate);
+
+                                            if (from.before(to)) {
+                                                searchOrder(firstName, lastName, order, fromDate, toDate);
+
+                                            }
+                                            else {
+                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
+                                            }
+
+                                        } catch (ParseException e) {
+                                            e.printStackTrace();
+                                            return;
+                                        }
+                                    }
+                                    else {
+                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                                    }
+                                }
+                                else {
+                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                                }
+
+
+                            }
+                            else {
+                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
+                            }
+
+                        }
+                        else {
+                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
+                        }
+
+                    }
+                    else {
+                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
+                    }
+
+                }
+                else {
+                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
+                }
+
+//
+//                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
+//                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+//                    break;
+//                } else {
+//                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
+//                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                    }
+//                    if (!fromDate.isEmpty() && toDate.isEmpty()) {
+//                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                        break;
+//                    }
+//
+//                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+//                        try {
+//                            Date from = formatter.parse(fromDate);
+//                            Date to = formatter.parse(toDate);
+//                            if(from.compareTo(to) > 0) {
+//                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                return;
+//                            }
+//                        } catch (ParseException e) {
+//                            e.printStackTrace();
+//                            return;
+//                        }
+//                    }
+//                }
+//
+//                searchOrder(firstName, lastName, order, fromDate, toDate);
 
                 break;
 

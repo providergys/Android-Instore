@@ -89,8 +89,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
     public boolean isSearched = false;
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-
-
     public SearchFragment() {
         // Required empty public constructor
     }
@@ -165,8 +163,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         Calendar now = Calendar.getInstance();
         DatePickerDialog.OnDateSetListener fromDateSetListener = new DatePickerDialog.OnDateSetListener() {
             @Override
-            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                fromTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
+            public void onDateSet(DatePicker datePicker, int i, int i1, int i2) { fromTextView.setText(i + "-" + (i1 + 1) + "-" + i2);
             }
         };
 
@@ -276,7 +273,7 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         orderEditText.setText("");
         fromTextView.setText("");
         toTextView.setText("");
-        hideKeyboard();
+
     }
 
     public void hideKeyboard() {
@@ -363,7 +360,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
         updateOrderDetails(position);
     }
 
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -386,45 +382,111 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
                 break;
 
             case R.id.closeSearchButton:
+                hideKeyboard();
                 hideSearch();
                 break;
 
             case R.id.searchImageButton:
-                String firstName = firstNameEditText.getText().toString();
-                String lastName = lastNameEditText.getText().toString();
-                String order = orderEditText.getText().toString();
-                String newOrder = Integer.toString(Integer.parseInt(order));
-                String fromDate = fromTextView.getText().toString();
-                String toDate = toTextView.getText().toString();
+                String firstName    = firstNameEditText.getText().toString();
+                String lastName     = lastNameEditText.getText().toString();
+                String order        = orderEditText.getText().toString();
+                String newOrder="";
 
-                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
-                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
-                    break;
-                } else {
-                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                    }
-                    if (!fromDate.isEmpty() && toDate.isEmpty()) {
-                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                        break;
-                    }
-
-                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
-                        try {
-                            Date from = formatter.parse(fromDate);
-                            Date to = formatter.parse(toDate);
-                            if(from.compareTo(to) > 0) {
-                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                return;
-                            }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                            return;
-                        }
-                    }
+                if (!order.isEmpty()){
+                    newOrder     = Integer.toString(Integer.parseInt(order));
                 }
 
-                searchOrder(firstName, lastName, order, fromDate, toDate);
+                String fromDate     = fromTextView.getText().toString();
+                String toDate       = toTextView.getText().toString();
+
+                if (!firstName.isEmpty()){
+                    if (!lastName.isEmpty()){
+                    if (!newOrder.isEmpty()){
+                        if (!fromDate.isEmpty() ) {
+                            if (!toDate.isEmpty()){
+                                if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+                                    try {
+                                        Date from = formatter.parse(fromDate);
+                                        Date to = formatter.parse(toDate);
+
+                                        if (from.before(to)) {
+                                            searchOrder(firstName, lastName, order, fromDate, toDate);
+
+                                        }
+                                        else {
+                                            DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
+                                        }
+
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                        return;
+                                    }
+                                }
+                                else {
+                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                                }
+                            }
+                            else {
+                                DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+                            }
+
+
+                        }
+                        else {
+                            DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
+                        }
+
+                    }
+                    else {
+                        DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
+                    }
+
+                    }
+                    else {
+                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
+                    }
+
+                }
+                else {
+                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
+                }
+
+//                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {
+//                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.empty_search_options), null, null);
+//
+//                } else {
+//                    if (fromDate.isEmpty() && !toDate.isEmpty()) {
+//
+//                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                    }
+//                    else {
+//
+//                        if (!fromDate.isEmpty() && toDate.isEmpty()) {
+//                            DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                        }
+//                        else {
+//
+//                            if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+//                                try {
+//                                    Date from = formatter.parse(fromDate);
+//                                    Date to = formatter.parse(toDate);
+//
+//                                    if (!from.before(to)) {
+//                                        DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
+//                                        return;
+//                                    }
+//                                    else {
+//                                        searchOrder(firstName, lastName, order, fromDate, toDate);
+//                                    }
+//
+//                                } catch (ParseException e) {
+//                                    e.printStackTrace();
+//                                    return;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 
                 break;
 

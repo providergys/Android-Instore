@@ -1,6 +1,8 @@
 package com.teaera.teaerastore.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +28,8 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.teaera.teaerastore.app.Application.isNetworkConnected;
 
 public class SignInActivity extends BaseActivity implements View.OnClickListener{
 
@@ -126,6 +130,12 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
     private void loginToServer(String pass) {
         showLoader(R.string.empty);
 
+        if (!isNetworkConnected(this)) {
+            DialogUtils.showDialog(this, "Error", getString(R.string.internet_error), null, null);
+            return;
+        }
+
+
         Application.getServerApi().login(new LoginRequest(selectedLocationId, pass)).enqueue(new Callback<StoreResponse>(){
 
             @Override
@@ -161,10 +171,18 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
         switch (view.getId()) {
 
             case R.id.loginImageButton:
+
                 String pass = passwordEditText.getText().toString();
+
+                if (!isNetworkConnected(this)) {
+                    DialogUtils.showDialog(this, "Error", getString(R.string.internet_error), null, null);
+                    return;
+                }
+
                 if (pass.isEmpty()) {
                     DialogUtils.showDialog(this, "Error", getString(R.string.enter_password), null, null);
                 } else {
+
                     loginToServer(pass);
                 }
 
@@ -174,4 +192,6 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
                 break;
         }
     }
+
+
 }
