@@ -46,6 +46,7 @@ import retrofit2.Response;
 /**
  * A simple {@link Fragment} subclass.
  */
+
 public class CompletedOrderFragment extends Fragment implements View.OnClickListener, OrderListAdapter.OnOrderItemClickListener {
 
     private OrderListAdapter orderListAdapter;

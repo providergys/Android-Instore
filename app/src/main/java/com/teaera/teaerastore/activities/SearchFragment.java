@@ -1,6 +1,5 @@
 package com.teaera.teaerastore.activities;
 
-
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -411,7 +410,6 @@ public class SearchFragment extends Fragment implements View.OnClickListener, Or
 
                                         if (from.before(to)) {
                                             searchOrder(firstName, lastName, order, fromDate, toDate);
-
                                         }
                                         else {
                                             DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
