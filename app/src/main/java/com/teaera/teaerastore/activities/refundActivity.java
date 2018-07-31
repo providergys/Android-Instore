@@ -146,7 +146,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
             orderInfo.getDetails().get(i).setQuantity(Integer.toString(quantity));
         }
 
-        rewardsTextView1.setText("+" + orderInfo.getRewards() + " Star");
+               rewardsTextView1.setText("+" + orderInfo.getRewards() + " Star");
         creditTextView1.setText("-$" + orderInfo.getRewardsCredit());
         taxTextView1.setText(String.format("$%.2f", (Float.parseFloat(orderInfo.getSubTotal()) - Float.parseFloat(orderInfo.getRewardsCredit())) * Float.parseFloat(orderInfo.getTax())));
         totalTextView1.setText("$" + orderInfo.getTotalPrice());
@@ -256,6 +256,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
             }
 
             Application.getServerApi().refundOrder("text/plain",new RefundOrderRequest(orderInfo.getUserId(), orderInfo.getId(), subTotalStr, redeemCreditStr, orderInfo.getTax(), taxAmountStr, totalPriceStr, rewards, redeem, refundItems)).enqueue(new Callback<RefundOrderResponse>(){
+
                 @Override
                 public void onResponse(Call<RefundOrderResponse> call, Response<RefundOrderResponse> response) {
                     hideLoader();
