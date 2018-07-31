@@ -32,6 +32,7 @@ import retrofit2.Response;
 
 public class refundActivity extends BaseActivity implements View.OnClickListener, RefundOrderListAdapter.OnRefundCheckListener {
 
+    private static final String TAG = "refundActivity";
     private TextView titleTextView;
     private RelativeLayout authRelativeLayout;
     private EditText codeEditText;
@@ -62,15 +63,13 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
     private ArrayList<Integer> checkList = new ArrayList<Integer>();
     private ArrayList<Integer> quantityList = new ArrayList<Integer>();
 
-    private int rewards = 0;
-
-    private String totalPriceStr = "0.00";
-    private String subTotalStr = "0.00";
-    private String redeemCreditStr = "0.00";
-    private String taxAmountStr= "0.00";
-
+    private int rewards             = 0;
+    private String totalPriceStr    = "0.00";
+    private String subTotalStr      = "0.00";
+    private String redeemCreditStr  = "0.00";
+    private String taxAmountStr     = "0.00";
     private OrderInfo orderInfo;
-    private int selectedItem = 0;
+    private int selectedItem        = 0;
     private boolean checkAll = false;
 
 
@@ -238,9 +237,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                 }
             }
         });
-
     }
-
 
     private void refund() {
         ArrayList<OrderItemInfo> refundItems = new ArrayList<OrderItemInfo>();
@@ -259,11 +256,11 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                 redeem = String.valueOf(redeemInt);
             }
 
-            Application.getServerApi().refundOrder(new RefundOrderRequest(orderInfo.getUserId(), orderInfo.getId(), subTotalStr, redeemCreditStr, orderInfo.getTax(), taxAmountStr, totalPriceStr, rewards, redeem, refundItems)).enqueue(new Callback<RefundOrderResponse>(){
-
+            Application.getServerApi().refundOrder("text/plain",new RefundOrderRequest(orderInfo.getUserId(), orderInfo.getId(), subTotalStr, redeemCreditStr, orderInfo.getTax(), taxAmountStr, totalPriceStr, rewards, redeem, refundItems)).enqueue(new Callback<RefundOrderResponse>(){
                 @Override
                 public void onResponse(Call<RefundOrderResponse> call, Response<RefundOrderResponse> response) {
                     hideLoader();
+
                     if (response.body().isError()) {
                         DialogUtils.showDialog(refundActivity.this, "Error", response.body().getMessage(), null, null);
                     } else {
@@ -277,7 +274,6 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                         confirmDateTextView.setText(getReceivedDate(orderInfo.getTimestamp()));
                     }
                 }
-
                 @Override
                 public void onFailure(Call<RefundOrderResponse> call, Throwable t) {
                     hideLoader();
@@ -288,10 +284,8 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
                     }
                 }
             });
-
         }
     }
-
 
     @Override
     public void onClick(View view) {

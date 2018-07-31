@@ -21,6 +21,7 @@ import com.teaera.teaerastore.net.Response.StoreResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
@@ -29,7 +30,7 @@ import retrofit2.http.POST;
 
 public interface ServerAPI {
 
-//    String BASE_URL = "http://34.228.81.219/store/api/";
+//  String BASE_URL = "http://34.228.81.219/store/api/";
     String BASE_URL = "http://34.230.22.171/store/api/";
 
     @POST("storeLogin")
@@ -67,9 +68,10 @@ public interface ServerAPI {
     );
 
     @POST("refundOrder")
-    Call<RefundOrderResponse> refundOrder(
-            @Body RefundOrderRequest request
+    Call<RefundOrderResponse> refundOrder(@Header("Content-Type") String content_type, @Body RefundOrderRequest request
     );
+
+
 
     @POST("getCustomerInfo")
     Call<GetOrdersResponse> getCustomerInfo(
