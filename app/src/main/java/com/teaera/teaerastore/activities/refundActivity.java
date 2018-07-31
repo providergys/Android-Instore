@@ -60,7 +60,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
 
     private ListView orderListView;
     private RefundOrderListAdapter refundOrderListAdapter;
-    private ArrayList<Integer> checkList = new ArrayList<Integer>();
+    private ArrayList<Integer> checkList    = new ArrayList<Integer>();
     private ArrayList<Integer> quantityList = new ArrayList<Integer>();
 
     private int rewards             = 0;
@@ -70,8 +70,7 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
     private String taxAmountStr     = "0.00";
     private OrderInfo orderInfo;
     private int selectedItem        = 0;
-    private boolean checkAll = false;
-
+    private boolean checkAll        = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,12 +87,12 @@ public class refundActivity extends BaseActivity implements View.OnClickListener
 
         authRelativeLayout = findViewById(R.id.authRelativeLayout);
         authRelativeLayout.setVisibility(View.GONE);
-        codeEditText = findViewById(R.id.codeEditText);
+        codeEditText        = findViewById(R.id.codeEditText);
 
         orderNumberTextView = findViewById(R.id.orderNumberTextView);
-        dateTextView = findViewById(R.id.dateTextView);
-        nameTextView = findViewById(R.id.nameTextView);
-        emailTextView = findViewById(R.id.emailTextView);
+        dateTextView        = findViewById(R.id.dateTextView);
+        nameTextView        = findViewById(R.id.nameTextView);
+        emailTextView       = findViewById(R.id.emailTextView);
 
         rewardsTextView1 = findViewById(R.id.rewardsTextView1);
         creditTextView1 = findViewById(R.id.creditTextView1);
