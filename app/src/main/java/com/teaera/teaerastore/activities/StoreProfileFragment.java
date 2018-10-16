@@ -652,7 +652,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
             ex.printStackTrace();
         }
     }
-
+/////vvvv
     private void findPrinter() {
         try {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
