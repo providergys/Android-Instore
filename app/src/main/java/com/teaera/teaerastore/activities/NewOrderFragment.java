@@ -180,7 +180,9 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     }
 
     private void init() {
+        System.out.println("dgggggggggggggggg"+"yha aaya new order");
 
+//        connectPrinter();
         orderListView = getActivity().findViewById(R.id.orderListView);
         orderListAdapter = new OrderListAdapter(getActivity(), orders, (OrderListAdapter.OnOrderItemClickListener) this);
         orderListView.setAdapter(orderListAdapter);
@@ -443,17 +445,45 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         if (orderItemInfos.size() == 0) {
             return;
         }
+        String[] arrSplit=null;
+        try{
+            arrSplit = orderItemInfos.get(0).getOptions().split(" --- ");
+        }catch (Exception e){
 
-//        ArrayList<OrderItemInfo> printInfos = new ArrayList<OrderItemInfo>();
-//        for (int i=0; i<orderItemInfos.size(); i++) {
-//
-//            OrderItemInfo item = orderItemInfos.get(i);
-//            int quantity = Integer.parseInt(item.getQuantity()) - Integer.parseInt(item.getRefundQuantity());
-//
-//            for (int j=0; j<quantity; j++) {
-//                printInfos.add(item);
-//            }
-//        }
+        }
+
+        String regular_oz="",none="",hot="",regular="",tapioca="",note="";
+
+        try{
+            regular_oz=arrSplit[0];
+        }catch (Exception e){
+
+        }
+        try{
+            none=arrSplit[1];
+        }catch (Exception e){
+
+        }
+        try{
+            hot=arrSplit[2];
+        }catch (Exception e){
+
+        }
+        try{
+            regular=arrSplit[3];
+        }catch (Exception e){
+
+        }
+        try{
+            tapioca=arrSplit[4];
+        }catch (Exception e){
+
+        }
+        try{
+            note=arrSplit[5];
+        }catch (Exception e){
+
+        }
 
         File dir = new File(Environment.getExternalStorageDirectory() + "/teaera");
 
@@ -660,7 +690,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
-        public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, PrintDocumentAdapter.LayoutResultCallback callback, Bundle extras){
+        public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras){
 
             if (cancellationSignal.isCanceled()) {
                 callback.onLayoutCancelled();
@@ -841,57 +871,57 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                     newOrder     = Integer.toString(Integer.parseInt(order));
                 }
 
-                if (!firstName.isEmpty()){
-                    if (!lastName.isEmpty()){
-                        if (!newOrder.isEmpty()){
-                            if (!fromDate.isEmpty() ) {
-                                if (!toDate.isEmpty()){
-                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
-                                        try {
-                                            Date from = formatter.parse(fromDate);
-                                            Date to = formatter.parse(toDate);
-
-                                            if (from.before(to)) {
+//                if (!firstName.isEmpty()){
+//                    if (!lastName.isEmpty()){
+//                        if (!newOrder.isEmpty()){
+//                            if (!fromDate.isEmpty() ) {
+//                                if (!toDate.isEmpty()){
+//                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+//                                        try {
+//                                            Date from = formatter.parse(fromDate);
+//                                            Date to = formatter.parse(toDate);
+//
+//                                            if (from.before(to)) {
                                                 searchOrder(firstName, lastName, order, fromDate, toDate);
 
-                                            }
-                                            else {
-                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
-                                            }
-
-                                        } catch (ParseException e) {
-                                            e.printStackTrace();
-                                            return;
-                                        }
-                                    }
-                                    else {
-                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                    }
-                                }
-                                else {
-                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                }
-
-
-                            }
-                            else {
-                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
-                            }
-
-                        }
-                        else {
-                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
-                        }
-
-                    }
-                    else {
-                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
-                    }
-
-                }
-                else {
-                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
-                }
+//                                            }
+//                                            else {
+//                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
+//                                            }
+//
+//                                        } catch (ParseException e) {
+//                                            e.printStackTrace();
+//                                            return;
+//                                        }
+//                                    }
+//                                    else {
+//                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                    }
+//                                }
+//                                else {
+//                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                }
+//
+//
+//                            }
+//                            else {
+//                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
+//                            }
+//
+//                        }
+//                        else {
+//                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
+//                        }
+//
+//                    }
+//                    else {
+//                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
+//                    }
+//
+//                }
+//                else {
+//                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
+//                }
 
 
 //
@@ -981,4 +1011,78 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
         return "";
     }
+    private void connectPrinter() {
+        try {
+            findPrinter();
+            openPrinter();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    /////vvvv
+    private void findPrinter() {
+        try {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if(mBluetoothAdapter == null) {
+                Toast.makeText(getActivity(), "No bluetooth adapter available",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetooth, 0);
+            }
+
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            String printNames = "";
+            if(pairedDevices.size() > 0) {
+                for (BluetoothDevice device : pairedDevices) {
+
+                    // RPP300 is the name of the bluetooth printer device
+                    // we got this name from the list of paired devices
+                    printNames = printNames + device.getName() + "\n";
+                    if (device.getName().equals("your Device Name")) {
+                        mmDevice = device;
+                        break;
+                    }
+                }
+            }
+
+
+//            Toast.makeText(getApplicationContext(), "Bluetooth device found.",
+//                    Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(getActivity(), printNames,
+                    Toast.LENGTH_LONG).show();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // tries to open a connection to the bluetooth printer device
+    void openPrinter() throws IOException {
+        try {
+            // Standard SerialPortService ID
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+            mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+            mmSocket.connect();
+            mmOutputStream = mmSocket.getOutputStream();
+            //mmInputStream = mmSocket.getInputStream();
+
+//            Bitmap bitmap = bitmapFromView();
+//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+//            byte[] byteArray = stream.toByteArray();
+//            mmOutputStream.write(byteArray);
+
+//            myLabel.setText("Bluetooth Opened");
+//            Toast.makeText(getApplicationContext(), "Your toast message",
+//                    Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
