@@ -37,6 +37,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brother.ptouch.sdk.Printer;
+import com.brother.ptouch.sdk.PrinterInfo;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -159,6 +161,9 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
         init();
         updateTimeSpinners();
         ac = getActivity();
+
+        System.out.println("dgggggggggggggggg"+"yha aaya");
+//        connectPrinter();
     }
 
     private void init() {
@@ -568,11 +573,43 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
 
                 document.add(table);
                 document.close();
+//
+//                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
+//
+//                String jobName = " Report";
+//                printManager.print(jobName, pda, null);
 
-                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
 
-                String jobName = " Report";
-                printManager.print(jobName, pda, null);
+                String path = Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf";
+                Printer myPrinter = new Printer();
+                PrinterInfo myPrinterInfo = new PrinterInfo();
+
+                try {
+
+                    myPrinterInfo.printerModel = PrinterInfo.Model.QL_820NWB;
+                    myPrinterInfo.ipAddress = "192.168.160.164";//not real ip
+                    myPrinterInfo.macAddress = "";
+                    myPrinterInfo.port = PrinterInfo.Port.NET;
+                    myPrinterInfo.paperSize = PrinterInfo.PaperSize.A7;
+                    myPrinterInfo.printMode=PrinterInfo.PrintMode.FIT_TO_PAGE;
+                    myPrinterInfo.numberOfCopies = 1;
+
+                    myPrinter.setPrinterInfo(myPrinterInfo);
+
+
+                    Log.i("HEYYYY", "startCommunication = " + myPrinter.startCommunication());
+
+                    myPrinter.printPDF(path,1);
+                    myPrinter.endCommunication();
+
+
+
+
+                } catch(Exception e){
+                    Toast.makeText(getActivity(), ""+e, Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+
+                }
 
                 Toast.makeText(getActivity(), "PDF is generated successfully!",
                         Toast.LENGTH_SHORT).show();
@@ -652,7 +689,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
             ex.printStackTrace();
         }
     }
-
+/////vvvv
     private void findPrinter() {
         try {
             mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

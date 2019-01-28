@@ -37,6 +37,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brother.ptouch.sdk.BluetoothPreference;
+import com.brother.ptouch.sdk.LabelInfo;
+import com.brother.ptouch.sdk.Printer;
+import com.brother.ptouch.sdk.PrinterInfo;
+import com.brother.ptouch.sdk.PrinterStatus;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -67,6 +72,10 @@ import com.teaera.teaerastore.net.Response.BaseResponse;
 import com.teaera.teaerastore.net.Response.GetOrdersResponse;
 import com.teaera.teaerastore.net.Response.SearchOrdersResponse;
 import com.teaera.teaerastore.preference.StorePrefs;
+import com.teaera.teaerastore.printerclass.BasePrint;
+import com.teaera.teaerastore.printerclass.MsgDialog;
+import com.teaera.teaerastore.printerclass.MsgHandle;
+import com.teaera.teaerastore.printerclass.PdfPrint;
 import com.teaera.teaerastore.utils.DialogUtils;
 
 import java.io.File;
@@ -99,7 +108,9 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     private ListView orderListView;
     private DetailsOrderListAdapter detailsOrderListAdapter;
     private ListView detailsOrderListView;
-
+    BasePrint myPrint = null;
+    MsgHandle mHandle;
+    MsgDialog mDialog;
     private TextView orderNumberTextView;
     private TextView dateTextView;
     private TextView nameTextView;
@@ -178,15 +189,45 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         init();
         ac = getActivity();
     }
-
+    BluetoothAdapter getBluetoothAdapter() {
+        final BluetoothAdapter bluetoothAdapter = BluetoothAdapter
+                .getDefaultAdapter();
+        if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+            final Intent enableBtIntent = new Intent(
+                    BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(enableBtIntent);
+        }
+        return bluetoothAdapter;
+    }
     private void init() {
-
+//        System.out.println("dgggggggggggggggg"+"yha aaya new order");
+//        mDialog = new MsgDialog(getActivity());
+//        mHandle = new MsgHandle(getActivity(), mDialog);
+//        myPrint = new PdfPrint(getActivity(), mHandle, mDialog);
+//        BluetoothAdapter bluetoothAdapter = getBluetoothAdapter();
+//        myPrint.setBluetoothAdapter(bluetoothAdapter);
+//        connectPrinter();
         orderListView = getActivity().findViewById(R.id.orderListView);
         orderListAdapter = new OrderListAdapter(getActivity(), orders, (OrderListAdapter.OnOrderItemClickListener) this);
         orderListView.setAdapter(orderListAdapter);
         detailsOrderListView = getActivity().findViewById(R.id.detailsOrderListView);
 
         orderNumberTextView = getActivity().findViewById(R.id.orderNumberTextView);
+//        orderNumberTextView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+////                String path = Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf";
+//////                System.out.println("sssssssssssssssssss"+path);
+//////
+////                ((PdfPrint) myPrint).setFiles(path);
+////                myPrint.print();
+//
+//System.out.println("dhggggggggggggggggg"+"yha aaya");
+//                printPDF();
+//
+//            }
+//        });
         dateTextView = getActivity().findViewById(R.id.dateTextView);
         nameTextView = getActivity().findViewById(R.id.nameTextView);
         emailTextView = getActivity().findViewById(R.id.emailTextView);
@@ -406,6 +447,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                             public void onPermissionsChecked(MultiplePermissionsReport report) {
 
                                 Toast.makeText(ac, "permission granted", Toast.LENGTH_SHORT).show();
+
                                 printPDF();
                             }
 
@@ -434,30 +476,20 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void printPDF() {
 
-        float left      = 20;
-        float right     = 20;
-        float top       = 30;
-        float bottom    = 20;
-
         ArrayList<OrderItemInfo> orderItemInfos = orders.get(selectedOrder).getDetails();
         if (orderItemInfos.size() == 0) {
             return;
         }
 
-//        ArrayList<OrderItemInfo> printInfos = new ArrayList<OrderItemInfo>();
-//        for (int i=0; i<orderItemInfos.size(); i++) {
-//
-//            OrderItemInfo item = orderItemInfos.get(i);
-//            int quantity = Integer.parseInt(item.getQuantity()) - Integer.parseInt(item.getRefundQuantity());
-//
-//            for (int j=0; j<quantity; j++) {
-//                printInfos.add(item);
-//            }
-//        }
+        float left = 20;
+        float right = 20;
+        float top = 30;
+        float bottom = 20;
+
 
         File dir = new File(Environment.getExternalStorageDirectory() + "/teaera");
 
-        if (!dir.exists()){
+        if (!dir.exists()) {
             dir.mkdirs();
         }
 
@@ -470,136 +502,132 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                 document.open();
                 document.setMargins(left, right, 0, bottom);
 
-                Paragraph preface = new Paragraph();
-                preface.add(new Paragraph("Tea Era, " + StorePrefs.getStoreInfo(getActivity()).getName(), titleFont));
-                preface.add(new Paragraph("Order Detail", titleFont));
-//                preface.add(new Paragraph(" "));
 
-                preface.add(new Paragraph("Printed Date & Time:", dateFont));
-                Date currentTime = Calendar.getInstance().getTime();
-                SimpleDateFormat curFormater = new SimpleDateFormat("dd/MM/yyyy, hh:mm a");
-                preface.add(new Paragraph(curFormater.format(currentTime), dateFont));
-                preface.add(new Paragraph(" "));
-
-                preface.add(new Paragraph("Customer Name:- " + orders.get(selectedOrder).getUserName(), font));
-                preface.add(new Paragraph("Email:- " + emailTextView.getText().toString(), font));
+                PdfPTable table = new PdfPTable(2);
+                table.setWidthPercentage(50);
+                table.setWidths(new int[]{ 2, 1});
+                table.setSpacingBefore(10f);
+                table.setSpacingAfter(10f);
 
 
-                int orderId = Integer.parseInt(orders.get(selectedOrder).getId());
-                preface.add(new Paragraph("Order:- #00" + orderId, font));
-                preface.add(new Paragraph(" "));
-                document.add(preface);
-                document.add(new LineSeparator());
-
-                PdfPTable table = new PdfPTable(3);
-                table.setWidthPercentage(100);
-                table.setSpacingBefore(0f);
-                table.setSpacingAfter(0f);
-
-                PdfPCell c1 = new PdfPCell(new Phrase("Item Name", font));
+                PdfPCell c1 = new PdfPCell(new Phrase("BLACK SUGAR JASMINE MILK TEA", font));
                 c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                //c1.setPadding(10.0f);
+                c1.setPadding(10.0f);
+                c1.setColspan(2);
                 table.addCell(c1);
 
-                c1 = new PdfPCell(new Phrase("Quantity", font));
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(c1);
+                PdfPTable inner_table1 = new PdfPTable(1);
+                inner_table1.setWidthPercentage(1);
 
-                c1 = new PdfPCell(new Phrase("Price ($)", font));
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(c1);
-                table.setHeaderRows(1);
+                PdfPCell cell1;
+                cell1 = new PdfPCell(new Phrase("Large"));
+                cell1.setRowspan(6);
+                c1.setPadding(10.0f);
+                cell1.setBorder(Rectangle.NO_BORDER);
+                inner_table1.addCell(cell1);
+
+                cell1 = new PdfPCell(new Phrase("Creamer"));
+                cell1.setBorder(Rectangle.NO_BORDER);
+                inner_table1.addCell(cell1);
+
+                cell1 = new PdfPCell(new Phrase("Iced"));
+                cell1.setBorder(Rectangle.NO_BORDER);
+                inner_table1.addCell(cell1);
+
+                cell1 = new PdfPCell(new Phrase("75% Sweetness"));
+                cell1.setBorder(Rectangle.NO_BORDER);
+                inner_table1.addCell(cell1);
+
+                cell1 = new PdfPCell(new Phrase("Boba.Taro Balls.Jelly"));
+                cell1.setBorder(Rectangle.NO_BORDER);
+                inner_table1.addCell(cell1);
+
+                cell1 = new PdfPCell(new Phrase("Note: Soy Milk."));
+                cell1.setBorder(Rectangle.NO_BORDER);
+                inner_table1.addCell(cell1);
 
 
-                for (int i=0; i<orderItemInfos.size(); i++) {
 
-                    PdfPCell cell;
-                    cell = new PdfPCell(new Phrase(orderItemInfos.get(i).getMenuName(), font));
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.addCell(cell);
+                table.addCell(inner_table1);
 
-                    cell = new PdfPCell(new Phrase(orderItemInfos.get(i).getQuantity(), font));
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.addCell(cell);
 
-                    cell = new PdfPCell(new Phrase(orderItemInfos.get(i).getPrice(), font));
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.addCell(cell);
+
+
+                PdfPTable inner_table = new PdfPTable(1);
+                inner_table.setWidthPercentage(1);
+
+
+                PdfPCell cell;
+                cell = new PdfPCell(new Phrase("1"));
+                cell.setRowspan(4);
+                cell.setPadding(8.0f);
+                cell.setBorder(Rectangle.NO_BORDER);
+                inner_table.addCell(cell);
+//                        document.add(new LineSeparator());
+
+                cell = new PdfPCell(new Phrase("3"));
+                cell.setPadding(8.0f);
+                cell.setBorder(Rectangle.NO_BORDER);
+                inner_table.addCell(cell);
+//                        document.add(new LineSeparator());
+
+                cell = new PdfPCell(new Phrase("09/07/17"));
+                cell.setPadding(5.0f);
+                cell.setBorder(Rectangle.NO_BORDER);
+                inner_table.addCell(cell);
+//                        document.add(new LineSeparator());
+
+//                        inner_table.addCell("3");
+//                        inner_table.addCell("09/07/17");
+                //  inner_table.addCell("03:21PM");
+
+                cell = new PdfPCell(new Phrase("03:21PM"));
+                cell.setPadding(5.0f);
+                cell.setBorder(Rectangle.NO_BORDER);
+                inner_table.addCell(cell);
+
+                table.addCell(inner_table);
+
+                document.add(table);
+                document.close();
+
+
+//                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
+//                String jobName = "Order";
+//                printManager.print(jobName, pda, null);
+                String path = Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf";
+                Printer myPrinter = new Printer();
+                PrinterInfo myPrinterInfo = new PrinterInfo();
+                try {
+
+                    myPrinterInfo.printerModel = PrinterInfo.Model.QL_820NWB;
+                    myPrinterInfo.ipAddress = "192.168.160.164";//not real ip
+                    myPrinterInfo.macAddress = "";
+                    myPrinterInfo.port = PrinterInfo.Port.NET;
+                    myPrinterInfo.paperSize = PrinterInfo.PaperSize.A7;
+                    myPrinterInfo.printMode=PrinterInfo.PrintMode.FIT_TO_PAGE;
+                    myPrinterInfo.numberOfCopies = 1;
+
+                    myPrinter.setPrinterInfo(myPrinterInfo);
+
+                    Log.i("HEYYYY", "startCommunication = " + myPrinter.startCommunication());
+
+                    myPrinter.printPDF(path,1);
+                    myPrinter.endCommunication();
+
+
+                } catch(Exception e){
+
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(), ""+e, Toast.LENGTH_LONG).show();
 
                 }
-                document.add(table);
-
-                Paragraph preface2 = new Paragraph();
-                preface2.add(new Paragraph(" "));
-                preface2.add(new Paragraph(" "));
-                document.add(preface2);
-
-                PdfPTable table1 = new PdfPTable(2);
-                table1.setWidthPercentage(100);
-                table1.setSpacingBefore(0f);
-                table1.setSpacingAfter(0f);
-
-                PdfPCell c2 = new PdfPCell(new Phrase("Rewards:- ", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(rewardTextView.getText().toString()+"*", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Subtotal:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(subtotalTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Reward Cradit:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(creditTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Tax:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(taxTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Total:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(totalTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                document.add(table1);
-
-
-//                Paragraph preface1 = new Paragraph();
-//
-//                preface1.add(new Paragraph("Subtotal:- $" + subtotalTextView.getText().toString(), font));
-//                preface1.add(new Paragraph("Reward Cradit:- $" + creditTextView.getText().toString(), font));
-//                preface1.add(new Paragraph("Tax:- $" + taxTextView.getText().toString(), font));
-//                preface1.add(new Paragraph("Total:- $" + totalTextView.getText().toString(), font));
-//
-//                document.add(preface1);
-
-                document.add(new LineSeparator());
-
-                document.close();
-                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
-
-                String jobName = "Order";
-                printManager.print(jobName, pda, null);
-
                 Toast.makeText(getActivity(), "PDF is generated successfully!",
                         Toast.LENGTH_SHORT).show();
+
+
+
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -609,6 +637,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         } catch(Exception e) {
             System.out.print( "jhsfffffffffffff 2"+ e);
         }
+
     }
 
     public static PrintDocumentAdapter pda = new PrintDocumentAdapter(){
@@ -841,57 +870,57 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                     newOrder     = Integer.toString(Integer.parseInt(order));
                 }
 
-                if (!firstName.isEmpty()){
-                    if (!lastName.isEmpty()){
-                        if (!newOrder.isEmpty()){
-                            if (!fromDate.isEmpty() ) {
-                                if (!toDate.isEmpty()){
-                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
-                                        try {
-                                            Date from = formatter.parse(fromDate);
-                                            Date to = formatter.parse(toDate);
-
-                                            if (from.before(to)) {
+//                if (!firstName.isEmpty()){
+//                    if (!lastName.isEmpty()){
+//                        if (!newOrder.isEmpty()){
+//                            if (!fromDate.isEmpty() ) {
+//                                if (!toDate.isEmpty()){
+//                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+//                                        try {
+//                                            Date from = formatter.parse(fromDate);
+//                                            Date to = formatter.parse(toDate);
+//
+//                                            if (from.before(to)) {
                                                 searchOrder(firstName, lastName, order, fromDate, toDate);
 
-                                            }
-                                            else {
-                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
-                                            }
-
-                                        } catch (ParseException e) {
-                                            e.printStackTrace();
-                                            return;
-                                        }
-                                    }
-                                    else {
-                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                    }
-                                }
-                                else {
-                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                }
-
-
-                            }
-                            else {
-                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
-                            }
-
-                        }
-                        else {
-                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
-                        }
-
-                    }
-                    else {
-                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
-                    }
-
-                }
-                else {
-                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
-                }
+//                                            }
+//                                            else {
+//                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
+//                                            }
+//
+//                                        } catch (ParseException e) {
+//                                            e.printStackTrace();
+//                                            return;
+//                                        }
+//                                    }
+//                                    else {
+//                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                    }
+//                                }
+//                                else {
+//                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                }
+//
+//
+//                            }
+//                            else {
+//                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
+//                            }
+//
+//                        }
+//                        else {
+//                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
+//                        }
+//
+//                    }
+//                    else {
+//                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
+//                    }
+//
+//                }
+//                else {
+//                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
+//                }
 
 
 //
@@ -981,4 +1010,78 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
         return "";
     }
+    private void connectPrinter() {
+        try {
+            findPrinter();
+            openPrinter();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    /////vvvv
+    private void findPrinter() {
+        try {
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+            if(mBluetoothAdapter == null) {
+                Toast.makeText(getActivity(), "No bluetooth adapter available",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            if(!mBluetoothAdapter.isEnabled()) {
+                Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBluetooth, 0);
+            }
+
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            String printNames = "";
+            if(pairedDevices.size() > 0) {
+                for (BluetoothDevice device : pairedDevices) {
+
+                    // RPP300 is the name of the bluetooth printer device
+                    // we got this name from the list of paired devices
+                    printNames = printNames + device.getName() + "\n";
+                    if (device.getName().equals("your Device Name")) {
+                        mmDevice = device;
+                        break;
+                    }
+                }
+            }
+
+
+//            Toast.makeText(getApplicationContext(), "Bluetooth device found.",
+//                    Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(getActivity(), printNames,
+                    Toast.LENGTH_LONG).show();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    // tries to open a connection to the bluetooth printer device
+    void openPrinter() throws IOException {
+        try {
+            // Standard SerialPortService ID
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+            mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+            mmSocket.connect();
+            mmOutputStream = mmSocket.getOutputStream();
+            //mmInputStream = mmSocket.getInputStream();
+
+//            Bitmap bitmap = bitmapFromView();
+//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+//            byte[] byteArray = stream.toByteArray();
+//            mmOutputStream.write(byteArray);
+
+//            myLabel.setText("Bluetooth Opened");
+//            Toast.makeText(getApplicationContext(), "Your toast message",
+//                    Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

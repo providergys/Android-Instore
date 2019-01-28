@@ -363,57 +363,57 @@ public class CompletedOrderFragment extends Fragment implements View.OnClickList
                     newOrder     = Integer.toString(Integer.parseInt(order));
                 }
 
-                if (!firstName.isEmpty()){
-                    if (!lastName.isEmpty()){
-                        if (!newOrder.isEmpty()){
-                            if (!fromDate.isEmpty() ) {
-                                if (!toDate.isEmpty()){
-                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
-                                        try {
-                                            Date from = formatter.parse(fromDate);
-                                            Date to = formatter.parse(toDate);
-
-                                            if (from.before(to)) {
+//                if (!firstName.isEmpty()){
+//                    if (!lastName.isEmpty()){
+//                        if (!newOrder.isEmpty()){
+//                            if (!fromDate.isEmpty() ) {
+//                                if (!toDate.isEmpty()){
+//                                    if (!fromDate.isEmpty() && !toDate.isEmpty()) {
+//                                        try {
+//                                            Date from = formatter.parse(fromDate);
+//                                            Date to = formatter.parse(toDate);
+//
+//                                            if (from.before(to)) {
                                                 searchOrder(firstName, lastName, order, fromDate, toDate);
 
-                                            }
-                                            else {
-                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
-                                            }
-
-                                        } catch (ParseException e) {
-                                            e.printStackTrace();
-                                            return;
-                                        }
-                                    }
-                                    else {
-                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                    }
-                                }
-                                else {
-                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
-                                }
-
-
-                            }
-                            else {
-                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
-                            }
-
-                        }
-                        else {
-                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
-                        }
-
-                    }
-                    else {
-                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
-                    }
-
-                }
-                else {
-                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
-                }
+//                                            }
+//                                            else {
+//                                                DialogUtils.showDialog(getActivity(), "Error", " To date should be higher than From date in order to start searching", null, null);
+//                                            }
+//
+//                                        } catch (ParseException e) {
+//                                            e.printStackTrace();
+//                                            return;
+//                                        }
+//                                    }
+//                                    else {
+//                                        DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                    }
+//                                }
+//                                else {
+//                                    DialogUtils.showDialog(getActivity(), "Error", getString(R.string.error_date), null, null);
+//                                }
+//
+//
+//                            }
+//                            else {
+//                                DialogUtils.showDialog(getActivity(), "Error", "Please choose date range", null, null);
+//                            }
+//
+//                        }
+//                        else {
+//                            DialogUtils.showDialog(getActivity(), "Error", "Please choose order id.", null, null);
+//                        }
+//
+//                    }
+//                    else {
+//                        DialogUtils.showDialog(getActivity(), "Error", "Please choose last name.", null, null);
+//                    }
+//
+//                }
+//                else {
+//                    DialogUtils.showDialog(getActivity(), "Error", "Please choose first name.", null, null);
+//                }
 
 //
 //                if (firstName.isEmpty() && lastName.isEmpty() && newOrder.isEmpty() && fromDate.isEmpty() && toDate.isEmpty()) {

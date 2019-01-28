@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="BrotherPrintLibrary:@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/BrotherPrintLibrary.aar/17b2c04579e32d2c6a6b3f5525a84145/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/BrotherPrintLibrary.aar/17b2c04579e32d2c6a6b3f5525a84145/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/BrotherPrintLibrary.aar/17b2c04579e32d2c6a6b3f5525a84145/jars/libs/MobilePrintLib.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

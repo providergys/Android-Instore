@@ -39,7 +39,7 @@ public class BaseActivity extends Activity {
         dialog = ProgressDialog.show(this, "",
                 getString(resId), true);
     }
-    
+
     public void hideLoader() {
         if (dialog != null) {
             dialog.dismiss();
