@@ -69,7 +69,7 @@ public class CustomerOrderListAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, final View convertView, ViewGroup parent) {
 
-        final CustomerOrderListAdapter.Holder holder = new CustomerOrderListAdapter.Holder();
+        final Holder holder = new Holder();
         final View rowView = inflater.inflate(R.layout.customer_order_list_item, null);
         holder.relativeLayout = rowView.findViewById(R.id.relativeLayout);
 

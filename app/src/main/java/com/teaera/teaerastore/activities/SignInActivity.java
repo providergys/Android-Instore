@@ -56,6 +56,9 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
             updateStores();
         }
     }
+    public void forceCrash(View view) {
+        throw new RuntimeException("This is a crash");
+    }
 
     private void init() {
 

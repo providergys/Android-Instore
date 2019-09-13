@@ -28,12 +28,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".utils.GenericFileProvider"
+            android:authorities="${applicationId}.my.package.name.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
         <activity
             android:name=".activities.SignInActivity"
             android:screenOrientation="landscape" />
         <activity android:name=".activities.MainActivity" />
         <activity android:name=".activities.refundActivity" />
         <activity android:name=".activities.CustomerInfoActivity" />
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="933b346e1192f4a8ecd2cc6a8ef5138c01d12f53" />
     </application>
 
 </manifest>

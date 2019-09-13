@@ -3,9 +3,11 @@ package com.teaera.teaerastore.app;
 import android.content.Context;
 import android.net.ConnectivityManager;
 
+import com.crashlytics.android.Crashlytics;
 import com.teaera.teaerastore.net.ServerAPI;
 import com.teaera.teaerastore.utils.FontsOverride;
 
+import io.fabric.sdk.android.Fabric;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -23,6 +25,7 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
         FontsOverride.setDefaultFont(this, "DEFAULT", "fonts/Montserrat-Light.otf");
         FontsOverride.setDefaultFont(this, "MONOSPACE", "fonts/Montserrat-Regular.otf");
         FontsOverride.setDefaultFont(this, "SERIF", "fonts/Montserrat-Bold.otf");

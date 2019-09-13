@@ -3,13 +3,16 @@ package com.teaera.teaerastore.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -22,6 +25,8 @@ import android.print.PrintDocumentInfo;
 import android.print.PrintManager;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,18 +42,20 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.draw.LineSeparator;
+
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.border.Border;
+import com.itextpdf.layout.border.SolidBorder;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.property.HorizontalAlignment;
+import com.itextpdf.layout.property.TextAlignment;
+import com.itextpdf.layout.property.VerticalAlignment;
+
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -67,6 +74,7 @@ import com.teaera.teaerastore.net.Response.BaseResponse;
 import com.teaera.teaerastore.net.Response.GetOrdersResponse;
 import com.teaera.teaerastore.net.Response.SearchOrdersResponse;
 import com.teaera.teaerastore.preference.StorePrefs;
+
 import com.teaera.teaerastore.utils.DialogUtils;
 
 import java.io.File;
@@ -89,6 +97,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static android.provider.UserDictionary.AUTHORITY;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -99,7 +109,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     private ListView orderListView;
     private DetailsOrderListAdapter detailsOrderListAdapter;
     private ListView detailsOrderListView;
-
+    public static boolean progress_status= false;
     private TextView orderNumberTextView;
     private TextView dateTextView;
     private TextView nameTextView;
@@ -132,6 +142,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     private ProgressDialog dialog;
     int pageNumber = 1;
     int selectedOrder = 0;
+    int order_print=0;
     public ArrayList<OrderInfo> orders = new ArrayList<OrderInfo>();
     public boolean isSearched = false;
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -145,15 +156,16 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     OutputStream mmOutputStream;
     InputStream mmInputStream;
     Thread workerThread;
+    Button test_pdf;
     Activity ac;
+    AlertDialog alertDialog;
 
-
-    private static Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20,
-            Font.BOLD);
-    private static Font font = new Font(Font.FontFamily.TIMES_ROMAN, 14,
-            Font.NORMAL);
-    private static Font dateFont = new Font(Font.FontFamily.TIMES_ROMAN, 14,
-            Font.BOLD);
+//    private static Font titleFont = new Font(Font.FontFamily.TIMES_ROMAN, 20,
+//            Font.BOLD);
+//    private static Font font = new Font(Font.FontFamily.TIMES_ROMAN, 14,
+//            Font.NORMAL);
+//    private static Font dateFont = new Font(Font.FontFamily.TIMES_ROMAN, 14,
+//            Font.BOLD);
 
     public NewOrderFragment() {
         // Required empty public constructor
@@ -170,6 +182,9 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     public void onViewCreated(View view, Bundle savedInstanceState) {
 
     }
+    public void forceCrash(View view) {
+        throw new RuntimeException("This is a crash");
+    }
 
     @Override
     public void onResume() {
@@ -178,10 +193,24 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         init();
         ac = getActivity();
     }
-
+    BluetoothAdapter getBluetoothAdapter() {
+        final BluetoothAdapter bluetoothAdapter = BluetoothAdapter
+                .getDefaultAdapter();
+        if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+            final Intent enableBtIntent = new Intent(
+                    BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            enableBtIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(enableBtIntent);
+        }
+        return bluetoothAdapter;
+    }
     private void init() {
-        System.out.println("dgggggggggggggggg"+"yha aaya new order");
-
+//        System.out.println("dgggggggggggggggg"+"yha aaya new order");
+//        mDialog = new MsgDialog(getActivity());
+//        mHandle = new MsgHandle(getActivity(), mDialog);
+//        myPrint = new PdfPrint(getActivity(), mHandle, mDialog);
+//        BluetoothAdapter bluetoothAdapter = getBluetoothAdapter();
+//        myPrint.setBluetoothAdapter(bluetoothAdapter);
 //        connectPrinter();
         orderListView = getActivity().findViewById(R.id.orderListView);
         orderListAdapter = new OrderListAdapter(getActivity(), orders, (OrderListAdapter.OnOrderItemClickListener) this);
@@ -189,6 +218,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         detailsOrderListView = getActivity().findViewById(R.id.detailsOrderListView);
 
         orderNumberTextView = getActivity().findViewById(R.id.orderNumberTextView);
+
         dateTextView = getActivity().findViewById(R.id.dateTextView);
         nameTextView = getActivity().findViewById(R.id.nameTextView);
         emailTextView = getActivity().findViewById(R.id.emailTextView);
@@ -206,6 +236,40 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         fromTextView.setOnClickListener(this);
         toTextView.setOnClickListener(this);
 
+//        test_pdf= getActivity().findViewById(R.id.test_pdf);
+//
+//        test_pdf.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                Dexter.withActivity(ac).withPermissions(
+//                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                        Manifest.permission.READ_EXTERNAL_STORAGE
+//                ).withListener(new MultiplePermissionsListener() {
+//                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+//                    @Override
+//                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+//
+//                        Toast.makeText(ac, "permission granted", Toast.LENGTH_SHORT).show();
+//
+//                        try {
+//
+//                                printPDF();
+//
+//
+//                        } catch (FileNotFoundException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+//                    }
+//
+//                }).check();
+//
+//            }
+//        });
 
         statusImageView = getActivity().findViewById(R.id.statusImageView);
         progressStatusButton = getActivity().findViewById(R.id.progressStatusButton);
@@ -298,6 +362,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         orderListAdapter.notifyDataSetChanged();
         updateOrderDetails(position);
         selectedOrder = position;
+        order_print=position;
     }
 
     private void updateOrderDetails(int position) {
@@ -335,7 +400,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
         showStatus(info.getStatus());
 
         detailsOrderListView.setVisibility(View.VISIBLE);
-        detailsOrderListAdapter = new DetailsOrderListAdapter(getActivity(), info.getDetails());
+        detailsOrderListAdapter = new DetailsOrderListAdapter(getActivity(), info.getDetails(),orders);
         detailsOrderListView.setAdapter(detailsOrderListAdapter);
     }
 
@@ -396,26 +461,36 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
                         orders.remove(selectedOrder);
                     }
                     updateOrderList(selectedOrder);
-
+                    progress_status=false;
                     if (status == "1") {
                         //printOrders();
-                        Dexter.withActivity(ac).withPermissions(
-                                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                        Manifest.permission.READ_EXTERNAL_STORAGE
-                                ).withListener(new MultiplePermissionsListener() {
-                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-                            @Override
-                            public void onPermissionsChecked(MultiplePermissionsReport report) {
-
-                                Toast.makeText(ac, "permission granted", Toast.LENGTH_SHORT).show();
-                                printPDF();
-                            }
-
-                            @Override
-                            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                            }
-
-                        }).check();
+//                        Dexter.withActivity(ac).withPermissions(
+//                                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                                        Manifest.permission.READ_EXTERNAL_STORAGE
+//                                ).withListener(new MultiplePermissionsListener() {
+//                            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+//                            @Override
+//                            public void onPermissionsChecked(MultiplePermissionsReport report) {
+//
+//                                Toast.makeText(ac, "permission granted", Toast.LENGTH_SHORT).show();
+//
+//                                try {
+//
+//
+//
+//                                    ();
+//                                } catch (FileNotFoundException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+//                            }
+//
+//                        }).check();
+                        progress_status = true;
+                        detailsOrderListAdapter.notifyDataSetChanged();
                     }
                 }
             }
@@ -434,211 +509,115 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
     }
     ////////////////// Print//////////////
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private void printPDF() {
+    private void printPDF() throws FileNotFoundException {
 
-        float left      = 20;
-        float right     = 20;
-        float top       = 30;
-        float bottom    = 20;
-
-        ArrayList<OrderItemInfo> orderItemInfos = orders.get(selectedOrder).getDetails();
+        ArrayList<OrderItemInfo> orderItemInfos = orders.get(order_print).getDetails();
         if (orderItemInfos.size() == 0) {
             return;
         }
-        String[] arrSplit=null;
-        try{
-            arrSplit = orderItemInfos.get(0).getOptions().split(" --- ");
-        }catch (Exception e){
-
-        }
-
-        String regular_oz="",none="",hot="",regular="",tapioca="",note="";
-
-        try{
-            regular_oz=arrSplit[0];
-        }catch (Exception e){
-
-        }
-        try{
-            none=arrSplit[1];
-        }catch (Exception e){
-
-        }
-        try{
-            hot=arrSplit[2];
-        }catch (Exception e){
-
-        }
-        try{
-            regular=arrSplit[3];
-        }catch (Exception e){
-
-        }
-        try{
-            tapioca=arrSplit[4];
-        }catch (Exception e){
-
-        }
-        try{
-            note=arrSplit[5];
-        }catch (Exception e){
-
-        }
-
-        File dir = new File(Environment.getExternalStorageDirectory() + "/teaera");
-
-        if (!dir.exists()){
-            dir.mkdirs();
-        }
-
-        File newFile = new File(Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf");
-        try {
-            newFile.createNewFile();
-            Document document = new Document(PageSize.A4, left, right, top, bottom);
-            try {
-                PdfWriter.getInstance(document, new FileOutputStream(newFile));
-                document.open();
-                document.setMargins(left, right, 0, bottom);
-
-                Paragraph preface = new Paragraph();
-                preface.add(new Paragraph("Tea Era, " + StorePrefs.getStoreInfo(getActivity()).getName(), titleFont));
-                preface.add(new Paragraph("Order Detail", titleFont));
-//                preface.add(new Paragraph(" "));
-
-                preface.add(new Paragraph("Printed Date & Time:", dateFont));
-                Date currentTime = Calendar.getInstance().getTime();
-                SimpleDateFormat curFormater = new SimpleDateFormat("dd/MM/yyyy, hh:mm a");
-                preface.add(new Paragraph(curFormater.format(currentTime), dateFont));
-                preface.add(new Paragraph(" "));
-
-                preface.add(new Paragraph("Customer Name:- " + orders.get(selectedOrder).getUserName(), font));
-                preface.add(new Paragraph("Email:- " + emailTextView.getText().toString(), font));
 
 
-                int orderId = Integer.parseInt(orders.get(selectedOrder).getId());
-                preface.add(new Paragraph("Order:- #00" + orderId, font));
-                preface.add(new Paragraph(" "));
-                document.add(preface);
-                document.add(new LineSeparator());
+        for (int i = 0; i <orderItemInfos.size() ; i++) {
+            File dir = new File(Environment.getExternalStorageDirectory() + "/teaera");
 
-                PdfPTable table = new PdfPTable(3);
-                table.setWidthPercentage(100);
-                table.setSpacingBefore(0f);
-                table.setSpacingAfter(0f);
-
-                PdfPCell c1 = new PdfPCell(new Phrase("Item Name", font));
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(c1);
-
-                c1 = new PdfPCell(new Phrase("Quantity", font));
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(c1);
-
-                c1 = new PdfPCell(new Phrase("Price ($)", font));
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table.addCell(c1);
-                table.setHeaderRows(1);
-
-
-                for (int i=0; i<orderItemInfos.size(); i++) {
-
-                    PdfPCell cell;
-                    cell = new PdfPCell(new Phrase(orderItemInfos.get(i).getMenuName(), font));
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.addCell(cell);
-
-                    cell = new PdfPCell(new Phrase(orderItemInfos.get(i).getQuantity(), font));
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.addCell(cell);
-
-                    cell = new PdfPCell(new Phrase(orderItemInfos.get(i).getPrice(), font));
-                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                    table.addCell(cell);
-
-                }
-                document.add(table);
-
-                Paragraph preface2 = new Paragraph();
-                preface2.add(new Paragraph(" "));
-                preface2.add(new Paragraph(" "));
-                document.add(preface2);
-
-                PdfPTable table1 = new PdfPTable(2);
-                table1.setWidthPercentage(100);
-                table1.setSpacingBefore(0f);
-                table1.setSpacingAfter(0f);
-
-                PdfPCell c2 = new PdfPCell(new Phrase("Rewards:- ", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(rewardTextView.getText().toString()+"*", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Subtotal:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(subtotalTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Reward Cradit:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(creditTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Tax:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(taxTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase("Total:- $", font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                c2 = new PdfPCell(new Phrase(totalTextView.getText().toString(), font));
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                table1.addCell(c2);
-
-                document.add(table1);
-
-
-//                Paragraph preface1 = new Paragraph();
-//
-//                preface1.add(new Paragraph("Subtotal:- $" + subtotalTextView.getText().toString(), font));
-//                preface1.add(new Paragraph("Reward Cradit:- $" + creditTextView.getText().toString(), font));
-//                preface1.add(new Paragraph("Tax:- $" + taxTextView.getText().toString(), font));
-//                preface1.add(new Paragraph("Total:- $" + totalTextView.getText().toString(), font));
-//
-//                document.add(preface1);
-
-                document.add(new LineSeparator());
-
-                document.close();
-                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
-
-                String jobName = "Order";
-                printManager.print(jobName, pda, null);
-
-                Toast.makeText(getActivity(), "PDF is generated successfully!",
-                        Toast.LENGTH_SHORT).show();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-
-                System.out.print( "jhsfffffffffffff 1"+ e);
+            if (!dir.exists()) {
+                dir.mkdirs();
             }
-        } catch(Exception e) {
-            System.out.print( "jhsfffffffffffff 2"+ e);
+
+            File newFile = new File(Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf");
+
+            PdfDocument pdf = new PdfDocument(new PdfWriter(newFile));
+            pdf.setDefaultPageSize(PageSize.A6);
+
+            Document document = new Document(pdf,  new PageSize(109, 340));
+            document.setMargins(0,0,0,0);
+
+
+//            Document document = new Document(pdf);
+
+            Table table = new Table(1);
+            table.setBorder(new SolidBorder(3));
+            table.setWidth(109).setHorizontalAlignment(HorizontalAlignment.CENTER);
+            // table.setWidthPercent(30).setMarginBottom(10);
+
+            table.addCell(new Cell().add(""+orderItemInfos.get(order_print).getMenuName()).setBold().setFontSize(16).setTextAlignment(TextAlignment.CENTER));
+            document.add(table);
+
+            Table table2 = new Table(2);
+            table2.setBorder(new SolidBorder(3));
+            table2.setBorderTop(null);
+            table2.setBorderBottom(null);
+            table2.setWidth(109).setHorizontalAlignment(HorizontalAlignment.CENTER);
+
+            table2.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+orderItemInfos.get(order_print).getQuantity()).setPadding(3).setBorderRight(new SolidBorder(3)).setBold().setTextAlignment(TextAlignment.CENTER));
+            table2.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+orderItemInfos.get(order_print).getDrinkable()).setPadding(3).setBorderLeft(new SolidBorder(3)).setBold().setTextAlignment(TextAlignment.CENTER));
+            document.add(table2);
+
+            Table table3 = new Table(1);
+            table3.setBorder(new SolidBorder(3));
+
+            table3.setWidth(109).setHorizontalAlignment(HorizontalAlignment.CENTER);
+            String first="",second="",third="",fourth="",fifth="",sixth="",seventh="";
+            try{
+                String currentString = orderItemInfos.get(order_print).getOptions();
+                String[] separated = currentString.split("---");
+                first=separated[0];
+                second=separated[1];
+                third=separated[2];
+                fourth=separated[3];
+                fifth=separated[4];
+                sixth=separated[5];
+            }catch (Exception e){
+
+            }
+            table3.addCell(new Cell().setBorderBottom(null).add(""+first.trim()));
+            table3.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+second.trim()));
+            table3.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+third.trim()));
+            table3.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+fourth.trim()));
+            table3.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+fifth.trim()));
+            table3.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+sixth.trim()));
+            table3.addCell(new Cell().setBorderTop(null).add(""+seventh.trim()));
+
+            document.add(table3);
+
+            SimpleDateFormat date = new SimpleDateFormat("dd/MM/yyyy");
+            String currentDateandTime = date.format(new Date());
+            System.out.println("jsioogogjog"+currentDateandTime);
+
+            SimpleDateFormat sdf1 = new SimpleDateFormat("h:mm a");
+            String current_time = sdf1.format(new Date());
+            System.out.println("jsioogogjog"+current_time);
+            Table table4 = new Table(1);
+            table4.setBorder(new SolidBorder(3));
+            table4.setBorderTop(null);
+            table4.setWidth(109).setHorizontalAlignment(HorizontalAlignment.CENTER);
+            table4.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+orders.get(0).getEmail()).setBold().setFontSize(10));
+            table4.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+orders.get(0).getUserName()).setFontSize(10));
+            table4.addCell(new Cell().setBorderTop(null).setBorderBottom(null).add(""+currentDateandTime).setFontSize(8));
+            table4.addCell(new Cell().setBorderTop(null).add(""+current_time).setFontSize(8));
+            document.add(table4);
+            document.close();
+
+
+            try{
+                final String path = Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf";
+                File file = new File(path);
+//                    Uri contentUri = FileProvider.getUriForFile(getActivity(), AUTHORITY, file);
+                Uri contentUri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName() + ".my.package.name.provider", file);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setPackage("com.dynamixsoftware.printershare");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.setDataAndType(contentUri, "application/pdf");
+                startActivity(intent);
+            }catch (Exception e){
+                Toast.makeText(getActivity(), ""+e, Toast.LENGTH_SHORT).show();
+
+            }
         }
+
+
+
+
     }
 
     public static PrintDocumentAdapter pda = new PrintDocumentAdapter(){
@@ -824,6 +803,7 @@ public class NewOrderFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onOrderItemClickListener(OrderInfo info, int position) {
+        progress_status = false;
         selectedOrder = position;
         updateOrderList(position);
         updateOrderDetails(position);

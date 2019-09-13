@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -24,6 +25,7 @@ import android.print.PrintDocumentInfo;
 import android.print.PrintManager;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -159,6 +161,9 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
         init();
         updateTimeSpinners();
         ac = getActivity();
+
+        System.out.println("dgggggggggggggggg"+"yha aaya");
+//        connectPrinter();
     }
 
     private void init() {
@@ -569,13 +574,23 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
                 document.add(table);
                 document.close();
 
-                PrintManager printManager = (PrintManager) ac.getSystemService(Context.PRINT_SERVICE);
 
-                String jobName = " Report";
-                printManager.print(jobName, pda, null);
 
-                Toast.makeText(getActivity(), "PDF is generated successfully!",
-                        Toast.LENGTH_SHORT).show();
+
+                try{
+                    final String path = Environment.getExternalStorageDirectory() + "/teaera/" + "order11.pdf";
+                    File file = new File(path);
+//                    Uri contentUri = FileProvider.getUriForFile(getActivity(), AUTHORITY, file);
+                    Uri contentUri = FileProvider.getUriForFile(getActivity(), getActivity().getPackageName() + ".my.package.name.provider", file);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setPackage("com.dynamixsoftware.printershare");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.setDataAndType(contentUri, "application/pdf");
+                    startActivity(intent);
+                }catch (Exception e){
+                    Toast.makeText(getActivity(), ""+e, Toast.LENGTH_SHORT).show();
+                    System.out.println("jkijodbgjoghjh"+e);
+                }
 
             } catch (DocumentException e) {
                 e.printStackTrace();
@@ -632,7 +647,7 @@ public class StoreProfileFragment extends Fragment implements View.OnClickListen
 
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
-        public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, PrintDocumentAdapter.LayoutResultCallback callback, Bundle extras){
+        public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes, CancellationSignal cancellationSignal, LayoutResultCallback callback, Bundle extras){
 
             if (cancellationSignal.isCanceled()) {
                 callback.onLayoutCancelled();

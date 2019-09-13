@@ -74,7 +74,7 @@ public class OrderListAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, final View convertView, ViewGroup parent) {
 
-        final OrderListAdapter.Holder holder = new OrderListAdapter.Holder();
+        final Holder holder = new Holder();
         final View rowView = inflater.inflate(R.layout.order_list_item, null);
         holder.relativeLayout = rowView.findViewById(R.id.relativeLayout);
         if (selectedPos == position) {

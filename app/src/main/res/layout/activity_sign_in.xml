@@ -232,6 +232,7 @@
             android:layout_marginTop="20dp"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
+
             android:src="@drawable/signin_button" />
 
     </RelativeLayout>
